@@ -40,8 +40,20 @@ app.use('/api/user', tokenAuth, userRoutes);
 app.use('/api/admin', tokenAuth, requireAdmin, adminRoutes);
 
 // Root routes
-app.get('/', tokenAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'dashboard.html'));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+app.get('/portal', tokenAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'portal.html'));
+});
+app.get('/admin', tokenAuth, requireAdmin, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // Session check

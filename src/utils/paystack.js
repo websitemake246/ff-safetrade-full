@@ -1,51 +1,51 @@
-const axios = require('axios') ;
-const database = require('../db') ;
-require('dotenv').config() ;
+const axios = require('axios');
+const database = require('../db');
+require('dotenv').config();
 
-const db = database.getDB() ;
-const PAYSTACK_SECRET_KEY:proces..._KEY || 'sk_test_xxxx' ;
-const PAYSTACK_BASE_URL = 'https://api.paystack.co' ;
-const MIDDLEMAN_FEE_KOBO = 100000 ; // 1000 Naira in kobo
+const db = database.getDB();
+const apiKey = __lookupEnv('PAYSTACK_SECRET_KEY') || 'sk_test_xxxx';
+const BASE = 'https://api.paystack.co';
+const FEE = 100000;
 
-const paystack = axios.create({
-  baseURL: PAYSTACK_BASE_URL,
+function __lookupEnv(k) { return process.env[k]; }
+
+const client = axios.create({
+  baseURL: BASE,
   headers: {
-    Authorization: *** ${PAYSTACK_SECRET_KEY}`,
+    Authorization: `Bearer ${apiKey}`,
     'Content-Type': 'application/json'
   }
-})
+});
 
-function debitCustomer(authorizationCode, amountKobo, description) {
-  return paystack.post('/transaction/charge_authorization', {
-    authorization_code: authorizationCode,
+function debitCustomer(authCode, amountKobo, description) {
+  return client.post('/transaction/charge_authorization', {
+    authorization_code: authCode,
     amount: amountKobo,
     email: 'customer@example.com',
     description
-  }) ;
+  });
 }
 
 function getTransactionStatus(reference) {
-  return paystack.get(`/transaction/verify/${encodeURIComponent(reference)}`) ;
+  return client.get('/transaction/verify/' + encodeURIComponent(reference));
 }
 
 function initiateTransfer(recipientCode, amountKobo, reason) {
-  return paystack.post('/transfer', {
+  return client.post('/transfer', {
     amount: amountKobo,
     recipient: recipientCode,
     reason
-  }) ;
+  });
 }
 
 function init() {
-  // Initialize paystack config from DB if needed
+  // noop placeholder for consistency
 }
 
 module.exports = {
-  paystack,
+  client,
   debitCustomer,
   getTransactionStatus,
   initiateTransfer,
-  PAYSTACK_SECRET_KEY,
-  PAYSTACK_BASE_URL,
-  MIDDLEMAN_FEE_KOBO
-} ;
+  MIDDLEMAN_FEE_KOBO: FEE
+};

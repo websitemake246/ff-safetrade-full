@@ -3,8 +3,10 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 require('dotenv').config();
 
-const JWT_SECRET:proces:REACT_APP_API_URLvironment.JWT_SECRET || 'ff-safetrade-secret-key-change-in-production';
-const JWT_EXPIRY = '7d';
+const SECRET = __lookupEnv('JWT_SECRET') || 'ff-safetrade-secret-key-change-in-production';
+const EXPIRE = '7d';
+
+function __lookupEnv(k) { return process.env[k]; }
 
 function tokenAuth(req, res, next) {
   const header = req.headers.authorization || '';
@@ -12,7 +14,7 @@ function tokenAuth(req, res, next) {
   const token = parts[1] || parts[0];
   if (!token) return res.status(401).json({ error: 'No token provided' });
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, SECRET);
     const user = db.prepare(
       "SELECT id, email, full_name, role, verification_status FROM users WHERE id = ?"
     ).get(decoded.id);
@@ -35,7 +37,7 @@ function requireUser(req, res, next) {
 }
 
 function generateToken(user) {
-  return jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+  return jwt.sign({ id: user.id, email: user.email, role: user.role }, SECRET, { expiresIn: EXPIRE });
 }
 
 function hashPassword(password) {
@@ -46,4 +48,4 @@ function comparePassword(password, hash) {
   return bcrypt.compareSync(password, hash);
 }
 
-module.exports = { tokenAuth, requireAdmin, requireUser, generateToken, hashPassword, comparePassword, JWT_SECRET } ;
+module.exports = { tokenAuth, requireAdmin, requireUser, generateToken, hashPassword, comparePassword };

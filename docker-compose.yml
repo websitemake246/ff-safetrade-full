@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PAYSTACK_SECRET_KEY:proces:REACT_APP_API_URLn.PAYSTACK_SECRET_KEY
+      - JWT_SECRET:proces:REACT_APP_API_URLn.JWT_SECRET

@@ -1,0 +1,1 @@
+module.exports= function(app){ app.use('/api', require('./auth')); app.use('/api', require('./listings')); app.use('/api', require('./deals')); app.use('/api', require('./disputes')); app.use('/api', require('./admin')); };
