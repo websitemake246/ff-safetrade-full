@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — FF SafeTrade</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="navbar">
+  <a href="/" class="logo">FF SafeTrade Admin</a>
+  <nav class="nav-links"><a href="/logout" class="btn btn-ghost btn-sm">Logout</a></nav>
+</header>
+<main class="container" style="position:relative;z-index:1;padding:24px;">
+  <h1>Admin Dashboard</h1>
+  <div class="listings-grid" id="stats"></div>
+  <div class="section-header" style="margin-top:24px;"><h2>All Deals</h2></div>
+  <div id="deals" class="listings-grid"></div>
+  <div class="section-header" style="margin-top:24px;"><h2>All Users</h2></div>
+  <div id="users" class="listings-grid"></div>
+</main>
+<script src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal — FF SafeTrade</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="navbar">
+  <a href="/" class="logo">FF SafeTrade</a>
+  <nav class="nav-links"><a href="/logout" class="btn btn-ghost btn-sm">Logout</a></nav>
+</header>
+<main class="container" style="position:relative;z-index:1;padding:24px;">
+  <h1>My Portal</h1>
+  <div class="section-header"><h2>My Listings</h2><button onclick="createListing()" class="btn btn-primary">New Listing</button></div>
+  <div id="listings" class="listings-grid"></div>
+  <div class="section-header" style="margin-top:32px;"><h2>My Deals</h2></div>
+  <div id="deals" class="listings-grid"></div>
+</main>
+<script src="/js/app.js"></script>
+</body>
+</html>
