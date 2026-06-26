@@ -19,17 +19,17 @@ require('dotenv').config();
 
 const { tokenAuth, requireAdmin } = jwtFunc;
 
-const __dirname = path.resolve();
+const appDir = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'views')));
+app.use(express.static(path.join(appDir, 'public')));
+app.use(express.static(path.join(appDir, 'views')));
 
 // Initialize sub-systems
-const db = initDB(__dirname);
+const db = initDB(appDir);
 initPaystack();
 
 // Mount routes
@@ -41,19 +41,19 @@ app.use('/api/admin', tokenAuth, requireAdmin, adminRoutes);
 
 // Root routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(appDir, 'public', 'index.html'));
 });
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  res.sendFile(path.join(appDir, 'public', 'login.html'));
 });
 app.get('/register', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'register.html'));
+  res.sendFile(path.join(appDir, 'public', 'register.html'));
 });
 app.get('/portal', tokenAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'portal.html'));
+  res.sendFile(path.join(appDir, 'public', 'portal.html'));
 });
 app.get('/admin', tokenAuth, requireAdmin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+  res.sendFile(path.join(appDir, 'public', 'admin.html'));
 });
 
 // Session check
