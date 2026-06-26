@@ -8,25 +8,25 @@ const { tokenAuth, requireAdmin, generateToken, hashPassword, comparePassword } 
 const router = express.Router();
 
 router.post('/register', (req, res) => {
-  const { email, password, full_name } = req.body || {};
-  if (!email || !password || !full_name) return res.status(400).json({ error: 'email, password, and full_name required' });
+  const { username, phone, password, full_name } = req.body || {};
+  if (!username || !password || !full_name) return res.status(400).json({ error: 'username, password, and full_name required' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   try {
     const passwordHash = hashPassword(password);
     const info = db.prepare(
       'INSERT INTO users (email, password, full_name, role, verification_status) VALUES (?, ?, ?, ?, ?)'
-    ).run(email.toLowerCase(), passwordHash, full_name, 'user', 'unverified');
+    ).run((username || '').toLowerCase(), passwordHash, full_name, 'user', 'unverified');
     const user = db.prepare('SELECT id, email, full_name, role, verification_status FROM users WHERE id = ?').get(info.lastInsertRowid);
     const token = generateToken(user);
     res.json({ token, user });
   } catch (e) {
-    res.status(400).json({ error: 'Email already in use' });
+    res.status(400).json({ error: 'Username already in use' });
   }
 });
 
 router.post('/login', (req, res) => {
-  const { email, password } = req.body || {};
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
+  const { username, password } = req.body || {};
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get((username || '').toLowerCase());
   if (!user || !comparePassword(password, user.password)) return res.status(401).json({ error: 'Invalid credentials' });
   const token = generateToken(user);
   res.json({ token, user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role, verification_status: user.verification_status } });

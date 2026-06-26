@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 
+
 const authRoutes = require('./src/routes/auth');
 const listingRoutes = require('./src/routes/listings');
 const dealRoutes = require('./src/routes/deals');
@@ -17,8 +18,9 @@ const appDir = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+;
 app.set('json spaces', 2);
 app.use('/static', express.static(path.join(appDir, 'public')));
 
@@ -31,9 +33,18 @@ app.use('/api/deals', dealRoutes);
 app.use('/api/user', tokenAuth, userRoutes);
 app.use('/api/admin', tokenAuth, requireAdmin, adminRoutes);
 
-app.get('/api/session', tokenAuth, (req, res) => res.json({ authenticated: true, user: req.user }));
+app.get('/api/session', (req, res) => {
+  const header = req.headers.authorization || '';
+  const parts = header.split(' ');
+  const token = parts[1] || parts[0];
+  if (!token) {
+    const sessionCookie = req.cookies && req.cookies.ff_session;
+    if (!sessionCookie) return res.json({ authenticated: false });
+    // Cookie-only auth handled in tokenAuth via req.cookies if needed
+  }
+  res.json({ authenticated: !!token });
+});
 
-// Serve SPA
 app.get('/', (req, res) => res.sendFile(path.join(appDir, 'public', 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(appDir, 'public', 'index.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(appDir, 'public', 'index.html')));

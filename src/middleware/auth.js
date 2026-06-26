@@ -9,9 +9,8 @@ const EXPIRE = '7d';
 function __lookupEnv(k) { return process.env[k]; }
 
 function tokenAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const parts = header.split(' ');
-  const token = parts[1] || parts[0];
+  const header = req.headers['x-ff-token'] || req.headers.authorization || '';
+  const token = header.replace(/^Bearer\\s+/i, '').trim();
   if (!token) return res.status(401).json({ error: 'No token provided' });
   try {
     const decoded = jwt.verify(token, SECRET);

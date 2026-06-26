@@ -33,7 +33,21 @@
     </div>
   </section>
 
-  <section id="listingsSection" class="card" style="padding:18px;margin-bottom:20px;">
+  <section id="authSection" class="card" style="padding:18px;margin-bottom:20px;">
+    <h2 style="margin-top:0;" id="authTitle">Login</h2>
+    <form id="authForm">
+      <input id="authUsername" class="form-control" placeholder="Username" required style="width:100%;margin-bottom:10px;">
+      <input id="authPhone" class="form-control" placeholder="Phone number" style="width:100%;margin-bottom:10px;display:none;">
+      <input id="authPassword" class="form-control" type="password" placeholder="Password" required style="width:100%;margin-bottom:10px;">
+      <button type="submit" class="btn btn-primary" style="width:100%;">Submit</button>
+    </form>
+    <p class="text-sec" style="margin-top:10px;" id="authSwitch">
+      <span id="authSwitchText">No account?</span>
+      <a href="#/register" id="authSwitchLink">Register</a>
+    </p>
+  </section>
+
+  <section id="listingsSection" class="card" style="padding:18px;margin-bottom:20px;display:none;" data-section="listing">
     <h2 style="margin-top:0;">Create Listing</h2>
     <form id="createForm">
       <div class="row" style="flex-wrap:wrap;gap:10px;">
@@ -68,6 +82,6 @@
     <div id="dealList"></div>
   </section>
 </main>
-<script src="/static/js/app.js"></script>
+<script src="/static/js/app.js?v=3"></script>
 </body>
 </html>
