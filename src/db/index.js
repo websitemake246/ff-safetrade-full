@@ -352,8 +352,9 @@ function init() {
   };
 }
 
+let _db = null;
 function getDB() {
-  throw new Error('Database not initialized. Call init() first.');
+  if (!_db) _db = init();
+  return _db;
 }
-
 module.exports = { init, getDB };
