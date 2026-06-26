@@ -28,6 +28,8 @@ app.use(express.json());
 app.use(express.static(path.join(appDir, 'public')));
 app.use(express.static(path.join(appDir, 'views')));
 
+app.set('json spaces', 2);
+
 // Initialize sub-systems
 const db = initDB(appDir);
 initPaystack();
@@ -39,21 +41,26 @@ app.use('/api/deals', dealRoutes);
 app.use('/api/user', tokenAuth, userRoutes);
 app.use('/api/admin', tokenAuth, requireAdmin, adminRoutes);
 
-// Root routes
+// Serve SPA pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(appDir, 'public', 'index.html'));
 });
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(appDir, 'public', 'login.html'));
+  res.sendFile(path.join(appDir, 'public', 'index.html'));
 });
 app.get('/register', (req, res) => {
-  res.sendFile(path.join(appDir, 'public', 'register.html'));
+  res.sendFile(path.join(appDir, 'public', 'index.html'));
 });
 app.get('/portal', tokenAuth, (req, res) => {
   res.sendFile(path.join(appDir, 'public', 'portal.html'));
 });
 app.get('/admin', tokenAuth, requireAdmin, (req, res) => {
   res.sendFile(path.join(appDir, 'public', 'admin.html'));
+});
+
+// Catch-all for SPA (must be last before error handler)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(appDir, 'public', 'index.html'));
 });
 
 // Session check
