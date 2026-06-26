@@ -1,6 +1,7 @@
 {
   "name": "ff-safetrade-full",
   "version": "2.0.0",
+  "type": "commonjs",
   "description": "FF SafeTrade Middleman Escrow Platform",
   "main": "server.js",
   "scripts": {
