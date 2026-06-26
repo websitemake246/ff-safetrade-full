@@ -1,19 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_DIR = () => path.join(__dirname, '..', '..', 'data');
-const DB_FILE = () => path.join(DEFAULT_DIR(), 'safetrade.json');
+const DB_DIR = () => path.join(__dirname, '..', '..', 'data');
+const DB_FILE = () => path.join(DB_DIR(), 'safetrade.json');
 
-function ensureExists() {
-  const dir = path.dirname(DB_FILE());
-  fs.mkdirSync(dir, { recursive: true });
+function ensureStore() {
+  fs.mkdirSync(DB_DIR(), { recursive: true });
   if (!fs.existsSync(DB_FILE())) {
     fs.writeFileSync(DB_FILE(), JSON.stringify({ users: [], listings: [], deals: [], disputes: [], dispute_messages: [], activity_logs: [] }));
   }
 }
 
 function load() {
-  ensureExists();
   return JSON.parse(fs.readFileSync(DB_FILE(), 'utf8'));
 }
 
@@ -21,8 +19,12 @@ function save(data) {
   fs.writeFileSync(DB_FILE(), JSON.stringify(data, null, 2));
 }
 
+function nextId(arr) {
+  return arr.length ? Math.max(0, ...arr.map((x) => Number(x.id || 0))) + 1 : 1;
+}
+
 function prepare(sql) {
-  const base = sql.trim().replace(/;$/,'');
+  const base = sql.trim().replace(/;$/g, '');
   const src = base.toLowerCase();
 
   return {
@@ -50,16 +52,17 @@ function prepare(sql) {
 
       if (src.startsWith('select coalesce(')) {
         const field = src.includes('amount_kobo') ? 'amount_kobo' : 'middleman_fee_kobo';
-        const total = load().deals.filter(r => r.status === 'completed').reduce((s,r) => s + Number(r[field] || 0), 0);
+        const total = load().deals.filter(r => r.status === 'completed').reduce((s, r) => s + Number(r[field] || 0), 0);
         return [{ volume: total, revenue: total }];
       }
 
-      const users = load().users;
-      const listings = load().listings;
-      const deals = load().deals;
-      const disputes = load().disputes || [];
-      const dm = load().dispute_messages || [];
-      const logs = load().activity_logs || [];
+      const db = load();
+      const users = db.users || [];
+      const listings = db.listings || [];
+      const deals = db.deals || [];
+      const disputes = db.disputes || [];
+      const dm = db.dispute_messages || [];
+      const logs = db.activity_logs || [];
 
       if (src.startsWith('select * from users where email = ?')) {
         const row = users.find(r => r.email.toLowerCase() === String(args[0]).toLowerCase());
@@ -76,7 +79,7 @@ function prepare(sql) {
 
       if (src.startsWith('select * from listings where user_id = ?')) {
         const rows = listings.filter(r => Number(r.user_id) === Number(args[0]));
-        rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
       }
 
@@ -94,7 +97,7 @@ function prepare(sql) {
         });
         if (args.length === 1 && args[0]) rows = rows.filter(r => r.status === args[0]);
         if (args.length === 2 && args[1] != null) rows = rows.filter(r => Number(r.user_id) === Number(args[1]));
-        rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
       }
 
@@ -105,7 +108,7 @@ function prepare(sql) {
         });
         if (args.length && typeof args[0] === 'string') rows = rows.filter(r => r.status === args[0]);
         if (args.length === 2 && args[1] != null) rows = rows.filter(r => Number(r.user_id) === Number(args[1]));
-        rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
       }
 
@@ -120,7 +123,7 @@ function prepare(sql) {
         if (minP != null) rows = rows.filter(r => Number(r.price_kobo) >= Number(minP));
         if (maxP != null) rows = rows.filter(r => Number(r.price_kobo) <= Number(maxP));
         if (verified === 'true') rows = rows.filter(r => Boolean(r.verified));
-        rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
       }
 
@@ -133,7 +136,7 @@ function prepare(sql) {
         });
         if (args.length === 1 && args[0]) rows = rows.filter(r => r.status === args[0]);
         if (args.length === 2 && args[1]) rows = rows.filter(r => r.id === args[1]);
-        rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows;
       }
 
@@ -155,7 +158,6 @@ function prepare(sql) {
       }
 
       if (src.startsWith('select * from disputes where deal_id = ?')) return disputes.filter(r => r.deal_id === String(args[0])) || [];
-
       if (src.startsWith('select id from disputes where deal_id = ?')) {
         const d = disputes.find(r => r.deal_id === String(args[0]));
         return d ? [{ id: d.id }] : [];
@@ -167,7 +169,7 @@ function prepare(sql) {
       }
 
       if (src.startsWith('select * from dispute_messages where dispute_id = ? order by created_at asc')) {
-        return dm.filter(r => String(r.dispute_id) === String(args[0])).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+        return dm.filter(r => String(r.dispute_id) === String(args[0])).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       }
 
       if (src.startsWith('select id, email, full_name from users where id = ?')) {
@@ -179,7 +181,7 @@ function prepare(sql) {
         let rows = logs.slice();
         if (args.length === 2) rows = rows.filter(r => Number(r.admin_id) === Number(args[0]) && r.action === args[1]);
         if (args.length === 1) rows = rows.filter(r => Number(r.admin_id) === Number(args[0]));
-        rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         return rows.slice(0, 100);
       }
 
@@ -216,8 +218,19 @@ function prepare(sql) {
         return out;
       }
 
+      function updDisputes(whereId, changes) {
+        if (!db.disputes) db.disputes = [];
+        const i = db.disputes.findIndex(r => String(r.id) === String(whereId));
+        if (i < 0) return out;
+        db.disputes[i] = { ...db.disputes[i], ...changes, updated_at: new Date().toISOString() };
+        save(db);
+        out.changes = 1;
+        return out;
+      }
+
       if (/update listings set view_count = view_count \+ 1 where id = \?/.test(base)) {
-        return updListings(args[0], { view_count: Number(db.listings.find(r => r.id === String(args[0]))?.view_count || 0) + 1 });
+        const cur = Number((db.listings || []).find(r => r.id === String(args[0]))?.view_count || 0);
+        return updListings(args[0], { view_count: cur + 1 });
       }
 
       if (/update listings set title=\?, platform=\?, description=\?, price_kobo=\?, evidence_urls=\?, account_details=\?, updated_at=\? where id=\?/.test(base)) {
@@ -229,7 +242,7 @@ function prepare(sql) {
       }
 
       if (/update users set verification_status = \?, is_verified = \?, updated_at = \? where id = \?/.test(base)) {
-        return updUsers(args[3], { verification_status: args[0], is_verified: args[1] ? 1 : 0 });
+        return updUsers(args[3], { verification_status: args[0], is_verified: Number(args[1]) ? 1 : 0 });
       }
 
       if (/\bupdate deals set status = \'completed\', completed_at = \?, updated_at = \? where id = \?/.test(base)) {
@@ -248,31 +261,29 @@ function prepare(sql) {
         return updDeals(args[2], { status: args[0] });
       }
 
+      if (/\bupdate deals set (.+?) where id = \?/.test(base)) {
+        const keys = base.match(/update deals set (.+?) where id = \?/)[1].split(',').map((s) => s.trim().split('=')[0].trim());
+        const last = args[args.length - 1];
+        const obj = {};
+        args.slice(0, -1).forEach((v, idx) => { if (keys[idx]) obj[keys[idx]] = v; });
+        return updDeals(last, obj);
+      }
+
       if (/update disputes set status = \?, resolution = \?, admin_notes = \?, assigned_admin_id = \?, resolved_at = \? where id = \?/.test(base)) {
-        const i = db.disputes.findIndex(r => r.id === String(args[5]));
-        if (i < 0) return out;
-        db.disputes[i] = { ...db.disputes[i], status: args[0], resolution: args[1], admin_notes: args[2], assigned_admin_id: args[3], resolved_at: args[4], updated_at: new Date().toISOString() };
-        save(db);
-        out.changes = 1;
-        return out;
+        return updDisputes(args[5], { status: args[0], resolution: args[1], admin_notes: args[2], assigned_admin_id: args[3], resolved_at: args[4] });
       }
 
       if (/update disputes set admin_notes = \?, assigned_admin_id = \?, updated_at = \? where id = \?/.test(base)) {
         return updDisputes(args[3], { admin_notes: args[0], assigned_admin_id: args[1], updated_at: args[2] });
       }
 
-      function updDisputes(whereId, changes) {
-        const i = db.disputes.findIndex(r => String(r.id) === String(whereId));
-        if (i < 0) return out;
-        db.disputes[i] = { ...db.disputes[i], ...changes, updated_at: new Date().toISOString() };
-        save(db);
-        out.changes = 1;
-        return out;
-      }
-
       if (/\binsert into users \(email, password, full_name, role, verification_status\) values \(\?, \?, \?, \?, \?\)/.test(base)) {
         if (db.users.some(r => r.email.toLowerCase() === String(args[0]).toLowerCase())) throw new Error('Email already in use');
-        const rec = { id: nextId(db.users), email: args[0], password: args[1], full_name: args[2], role: args[3], verification_status: args[4], phone: null, is_verified: 0, discord_id: null, paystack_customer_code: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+        const rec = {
+          id: nextId(db.users), email: args[0], password: args[1], full_name: args[2], role: args[3], verification_status: args[4],
+          phone: null, is_verified: 0, discord_id: null, paystack_customer_code: null,
+          created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+        };
         db.users.push(rec);
         save(db);
         return { lastInsertRowid: rec.id };
@@ -299,7 +310,7 @@ function prepare(sql) {
           evidence_urls: '[]', created_at: new Date().toISOString(), updated_at: new Date().toISOString()
         };
         db.deals.push(rec);
-        const l = db.listings.find(x => Number(x.id) === Number(args[1]));
+        const l = (db.listings || []).find(x => Number(x.id) === Number(args[1]));
         if (l) { l.status = 'pending_payment'; l.updated_at = new Date().toISOString(); }
         save(db);
         return { lastInsertRowid: rec.id };
@@ -307,6 +318,7 @@ function prepare(sql) {
 
       if (/\binsert into disputes \(id, deal_id, opened_by, reason, status\) values \(\?, \?, \?, \?, \?\)/.test(base)) {
         const rec = { id: args[0], deal_id: String(args[1]), opened_by: args[2], reason: args[3], status: args[4], resolution: null, admin_notes: null, assigned_admin_id: null, resolved_at: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+        db.disputes = db.disputes || [];
         db.disputes.push(rec);
         save(db);
         return rec;
@@ -314,7 +326,7 @@ function prepare(sql) {
 
       if (/\binsert into dispute_messages \(dispute_id, user_id, message, attachment_url\) values \(\?, \?, \?, \?\)/.test(base)) {
         const rec = { id: nextId(dm), dispute_id: String(args[0]), user_id: args[1], message: args[2], attachment_url: args[3] || null, created_at: new Date().toISOString() };
-        db.dispute_messages = dm;
+        db.dispute_messages = db.dispute_messages || [];
         db.dispute_messages.push(rec);
         save(db);
         return rec;
@@ -333,8 +345,15 @@ function prepare(sql) {
   };
 }
 
-function getDB() { throw new Error('Database not initialized. Call init() first.'); }
+function init() {
+  ensureStore();
+  return {
+    prepare
+  };
+}
 
-function nextId(arr) { return arr.length ? Math.max(...arr.map((x) => Number(x.id || 0))) + 1 : 1; }
+function getDB() {
+  throw new Error('Database not initialized. Call init() first.');
+}
 
 module.exports = { init, getDB };
