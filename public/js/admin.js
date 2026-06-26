@@ -1,6 +1,6 @@
 (function(){
   const token = localStorage.getItem('ff_token');
-  function api(path, body){ return fetch('/api/admin'+path,{method:body?'POST':'GET', headers:{'Content-Type':'application/json', Authorization: 'Bearer '+token}, body: body?JSON.stringify(body):undefined}).then(r=>r.json()); }
+  function api(path, body){ return fetch('/api/admin'+path,{method:body?'POST':'GET', headers:{'Content-Type':'application/json', Authorization:'Bearer '+token}, body: body?JSON.stringify(body):undefined}).then(r=>r.json()); }
   async function init(){
     const dash = await api('/dashboard');
     const users = await api('/users');

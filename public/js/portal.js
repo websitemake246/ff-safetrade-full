@@ -1,6 +1,6 @@
 (function(){
   const token = localStorage.getItem('ff_token');
-  function api(path, body){ return fetch('/api'+path,{method:body?'POST':'GET', headers:{'Content-Type':'application/json', Authorization: 'Bearer '+token}, body: body?JSON.stringify(body||{}):undefined}).then(r=>r.json()); }
+  function api(path, body){ return fetch('/api'+path,{method:body?'POST':'GET', headers:{'Content-Type':'application/json', Authorization:'Bearer '+token}, body: body?JSON.stringify(body||{}):undefined}).then(r=>r.json()); }
   async function init(){
     const coins = await api('/user/coins');
     set('myCoins', Number(coins.coins||0).toLocaleString());

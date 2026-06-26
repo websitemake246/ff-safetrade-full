@@ -1,8 +1,9 @@
 (function(){
   const token = localStorage.getItem('ff_token');
   function api(path, body){
-    const opts = { headers: { Authorization: 'Bearer '+token } };
-    if (body) { Object.assign(opts.headers, {'Content-Type':'application/json'}).headers; opts.body=JSON.stringify(body||{}); opts.method='POST'; }
+    const opts = { headers: {} };
+    if (token) opts.headers.Authorization = 'Bearer ' + token;
+    if (body) { Object.assign(opts.headers, {'Content-Type':'application/json'}); opts.method='POST'; opts.body=JSON.stringify(body||{}); }
     return fetch('/api'+path, opts).then(r=>r.json());
   }
   async function init(){

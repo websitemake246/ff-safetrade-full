@@ -23,9 +23,9 @@
   </div>
 </header>
 <main class="container">
-  <section class="hero card">
-    <h1>Next-gen Free Fire Escrow</h1>
-    <p class="text-sec">Secure coin payments. Verified middleman workflow.</p>
+  <section class="card" style="padding:24px;margin-bottom:20px;">
+    <h1 style="margin-top:0;">Middleman service for Free Fire trades</h1>
+    <p class="text-sec">Safe escrow. Instant coin top-ups. Verified sellers.</p>
     <div class="alert">⚠️ Game accounts violate Garena ToS. Trade at your own risk.</div>
     <div class="row" style="gap:10px;margin-top:12px;">
       <a class="btn btn-primary btn-lg" href="#/browse">Browse listings</a>
@@ -33,11 +33,39 @@
     </div>
   </section>
 
+  <section id="listingsSection" class="card" style="padding:18px;margin-bottom:20px;">
+    <h2 style="margin-top:0;">Create Listing</h2>
+    <form id="createForm">
+      <div class="row" style="flex-wrap:wrap;gap:10px;">
+        <input id="listTitle" class="form-control" placeholder="Title" required style="flex:1;min-width:180px;">
+        <select id="listPlatform" class="form-control" style="min-width:140px;">
+          <option>Free Fire</option><option>Valorant</option><option>CS:GO</option><option>League of Legends</option><option>Fortnite</option><option>Roblox</option><option>Other</option>
+        </select>
+      </div>
+      <textarea id="listDescription" class="form-control" placeholder="Description" style="width:100%;margin-top:10px;min-height:80px;"></textarea>
+      <div class="row" style="gap:10px;margin-top:10px;">
+        <input id="listPrice" class="form-control" type="number" min="10" placeholder="Price (₦)" required style="width:160px;">
+      </div>
+      <textarea id="listEvidence" class="form-control" placeholder="Evidence URLs (one per line)" style="width:100%;margin-top:10px;min-height:70px;"></textarea>
+      <button type="submit" class="btn btn-primary" style="margin-top:10px;">Create listing</button>
+    </form>
+  </section>
+
   <section class="stats">
     <div class="card"><div class="stat" id="statUsers">—</div><div class="label">Users</div></div>
     <div class="card"><div class="stat" id="statDeals">—</div><div class="label">Deals</div></div>
     <div class="card"><div class="stat" id="statListings">—</div><div class="label">Open listings</div></div>
     <div class="card"><div class="stat" id="statFees">—</div><div class="label">Fees collected (₦)</div></div>
+  </section>
+
+  <section id="browseSection" class="card" style="padding:18px;margin-top:22px;">
+    <h2 style="margin-top:0;">Browse</h2>
+    <div id="listGrid" class="listings-grid"></div>
+  </section>
+
+  <section id="dealsSection" class="card" style="padding:18px;margin-top:22px;">
+    <h2 style="margin-top:0;">My Deals</h2>
+    <div id="dealList"></div>
   </section>
 </main>
 <script src="/static/js/app.js"></script>
