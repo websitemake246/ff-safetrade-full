@@ -4,35 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portal — FF SafeTrade</title>
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+<canvas id="cyberBg" class="bg"></canvas>
+<div class="overlay"></div>
 <header class="navbar">
-  <a href="/" class="logo">FF SafeTrade</a>
+  <a href="/" class="logo">⚡ FF SafeTrade</a>
   <nav class="nav-links">
     <a href="#/browse">Browse</a>
     <a href="#/listings/create">Sell</a>
     <a href="#/deals">Deals</a>
   </nav>
-  <nav class="nav-links">
+  <div class="nav-actions">
     <a href="/" class="btn btn-ghost btn-sm">Home</a>
     <a href="/logout" class="btn btn-ghost btn-sm">Logout</a>
-  </nav>
+  </div>
 </header>
-<main class="container" style="position:relative;z-index:1;padding:24px;">
-  <h1>My Portal</h1>
-  <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px;">
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="myCoins">—</div><small class="text-muted">Coins</small></div>
+<main class="container">
+  <div class="stats">
+    <div class="card"><div class="stat" id="myCoins">—</div><div class="label">Coins</div></div>
   </div>
   <section>
-    <h3>My Listings</h3>
-    <div id="listings" class="listings-grid"></div>
+    <h2>My Listings</h2>
+    <div id="listings"></div>
   </section>
   <section style="margin-top:24px;">
-    <h3>My Deals</h3>
-    <div id="deals" class="listings-grid"></div>
+    <h2>My Deals</h2>
+    <div id="deals"></div>
   </section>
 </main>
-<script src="/js/portal.js"></script>
+<script src="/static/js/portal.js"></script>
 </body>
 </html>

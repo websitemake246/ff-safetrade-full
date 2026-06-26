@@ -4,59 +4,55 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — FF SafeTrade</title>
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+<canvas id="cyberBg" class="bg"></canvas>
+<div class="overlay"></div>
 <header class="navbar">
-  <a href="/" class="logo">FF SafeTrade Admin</a>
+  <a href="/" class="logo">🛡️ FF Admin</a>
   <nav class="nav-links">
     <a href="#/admin">Dashboard</a>
     <a href="#/admin/users">Users</a>
     <a href="#/admin/deals">Deals</a>
     <a href="#/admin/disputes">Disputes</a>
   </nav>
-  <nav class="nav-links">
+  <div class="nav-actions">
     <a href="/" class="btn btn-ghost btn-sm">Home</a>
     <a href="/logout" class="btn btn-ghost btn-sm">Logout</a>
-  </nav>
-</header>
-<main class="container" style="position:relative;z-index:1;padding:24px;">
-  <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="sUsers">—</div><small class="text-muted">Users</small></div>
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="sListings">—</div><small class="text-muted">Listings</small></div>
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="sDeals">—</div><small class="text-muted">Deals</small></div>
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="sDisputed">—</div><small class="text-muted">Disputed</small></div>
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="sVolume">—</div><small class="text-muted">Volume (₦)</small></div>
-    <div class="card" style="padding:16px;"><div style="font-weight:800" id="sRevenue">—</div><small class="text-muted">Revenue (₦)</small></div>
   </div>
-
-  <section class="card" style="padding:18px;margin-top:18px;">
-    <h3 style="margin-top:0;">Send Coins</h3>
-    <div class="row" style="align-items:end;gap:10px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:180px;">
-        <label class="text-muted">User email</label>
-        <input id="toEmail" class="form-control" placeholder="user@example.com">
-      </div>
-      <div style="width:120px;">
-        <label class="text-muted">Coins</label>
-        <input id="coinAmount" class="form-control" type="number" min="1" placeholder="1000">
-      </div>
-      <button id="sendCoinsBtn" class="btn btn-primary">Send coins</button>
-    </div>
-    <small class="text-muted">1 coin = ₦1. Use this to credit buyers after payment.</small>
-    <div id="coinResult" style="margin-top:10px;"></div>
+</header>
+<main class="container">
+  <section class="stats">
+    <div class="card"><div class="stat" id="sUsers">—</div><div class="label">Users</div></div>
+    <div class="card"><div class="stat" id="sListings">—</div><div class="label">Listings</div></div>
+    <div class="card"><div class="stat" id="sDeals">—</div><div class="label">Deals</div></div>
+    <div class="card"><div class="stat" id="sDisputed">—</div><div class="label">Disputed</div></div>
+    <div class="card"><div class="stat" id="sVolume">—</div><div class="label">Volume (₦)</div></div>
+    <div class="card"><div class="stat" id="sRevenue">—</div><div class="label">Revenue (₦)</div></div>
   </section>
 
-  <section class="card" style="padding:18px;margin-top:18px;">
-    <h3 style="margin-top:0;">Registration Stats</h3>
-    <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
-      <div><div style="font-weight:800" id="rTotalUsers">—</div><small class="text-muted">Total users</small></div>
-      <div><div style="font-weight:800" id="rOpenListings">—</div><small class="text-muted">Open listings</small></div>
-      <div><div style="font-weight:800" id="rPendingPayment">—</div><small class="text-muted">Pending payment</small></div>
-      <div><div style="font-weight:800" id="rActiveDeals">—</div><small class="text-muted">Active deals</small></div>
+  <section class="card">
+    <h2>Send Coins</h2>
+    <div class="row">
+      <input id="toEmail" class="form-control" placeholder="user@example.com">
+      <input id="coinAmount" class="form-control" type="number" min="1" placeholder="1000">
+      <button id="sendCoinsBtn" class="btn btn-primary">Send coins</button>
+    </div>
+    <p class="text-sec">1 coin = ₦1</p>
+    <div id="coinResult"></div>
+  </section>
+
+  <section class="card">
+    <h2>Registration Stats</h2>
+    <div class="stats">
+      <div class="card"><div class="stat" id="rTotalUsers">—</div><div class="label">Total users</div></div>
+      <div class="card"><div class="stat" id="rOpenListings">—</div><div class="label">Open listings</div></div>
+      <div class="card"><div class="stat" id="rPendingPayment">—</div><div class="label">Pending payment</div></div>
+      <div class="card"><div class="stat" id="rActiveDeals">—</div><div class="label">Active deals</div></div>
     </div>
   </section>
 </main>
-<script src="/js/admin.js"></script>
+<script src="/static/js/admin.js"></script>
 </body>
 </html>

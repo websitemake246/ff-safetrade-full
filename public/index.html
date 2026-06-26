@@ -3,53 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FF SafeTrade — Middleman for Free Fire Items</title>
-<link rel="stylesheet" href="/css/style.css">
+<title>FF SafeTrade</title>
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+<canvas id="cyberBg" class="bg"></canvas>
+<div class="overlay"></div>
 <header class="navbar">
-  <a href="/" class="logo">
-    <span>🎮</span> FF SafeTrade
-  </a>
+  <a href="/" class="logo">⚡ FF SafeTrade</a>
   <nav class="nav-links">
     <a href="#/browse">Browse</a>
     <a href="#/listings/create">Sell</a>
     <a href="#/deals">Deals</a>
     <a href="#/coins">Coins</a>
   </nav>
-  <div>
+  <div class="nav-actions">
     <a href="/login" class="btn btn-ghost btn-sm">Login</a>
     <a href="/register" class="btn btn-primary btn-sm">Register</a>
   </div>
 </header>
-<main class="container" style="position:relative;z-index:1;padding:24px;">
-  <section class="card" style="padding:24px;margin-bottom:20px;">
-    <h1 style="margin-top:0;">Middleman service for Free Fire trades</h1>
-    <p class="text-muted">Safe escrow. Instant coin top-ups. Verified sellers.</p>
-    <div class="alert" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5;border-radius:14px;padding:14px 16px;">
-      ⚠️ Game accounts violate Garena ToS. Trade at your own risk.
-    </div>
-    <div class="row" style="gap:12px;margin-top:16px;">
-      <a class="btn btn-primary" href="#/browse">Browse listings</a>
-      <a class="btn btn-ghost" href="#/listings/create">Create listing</a>
+<main class="container">
+  <section class="hero card">
+    <h1>Next-gen Free Fire Escrow</h1>
+    <p class="text-sec">Secure coin payments. Verified middleman workflow.</p>
+    <div class="alert">⚠️ Game accounts violate Garena ToS. Trade at your own risk.</div>
+    <div class="row" style="gap:10px;margin-top:12px;">
+      <a class="btn btn-primary btn-lg" href="#/browse">Browse listings</a>
+      <a class="btn btn-ghost btn-lg" href="#/listings/create">Create listing</a>
     </div>
   </section>
 
-  <section class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
-    <div class="card" style="padding:18px;">
-      <div style="font-weight:800;font-size:28px;" id="statUsers">—</div>
-      <small class="text-muted">Users registered</small>
-    </div>
-    <div class="card" style="padding:18px;">
-      <div style="font-weight:800;font-size:28px;" id="statDeals">—</div>
-      <small class="text-muted">Total deals</small>
-    </div>
-    <div class="card" style="padding:18px;">
-      <div style="font-weight:800;font-size:28px;" id="statListings">—</div>
-      <small class="text-muted">Open listings</small>
-    </div>
+  <section class="stats">
+    <div class="card"><div class="stat" id="statUsers">—</div><div class="label">Users</div></div>
+    <div class="card"><div class="stat" id="statDeals">—</div><div class="label">Deals</div></div>
+    <div class="card"><div class="stat" id="statListings">—</div><div class="label">Open listings</div></div>
+    <div class="card"><div class="stat" id="statFees">—</div><div class="label">Fees collected (₦)</div></div>
   </section>
 </main>
-<script src="/js/app.js"></script>
+<script src="/static/js/app.js"></script>
 </body>
 </html>
