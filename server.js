@@ -3,18 +3,18 @@ const path = require('path');
 const cors = require('cors');
 
 // Core
-const authRoutes = require('./routes/auth');
-const listingRoutes = require('./routes/listings');
-const dealRoutes = require('./routes/deals');
-const adminRoutes = require('./routes/admin');
-const userRoutes = require('./routes/user');
+const authRoutes = require('./src/routes/auth');
+const listingRoutes = require('./src/routes/listings');
+const dealRoutes = require('./src/routes/deals');
+const adminRoutes = require('./src/routes/admin');
+const userRoutes = require('./src/routes/user');
 
 // Auth
-const jwtFunc = require('./middleware/auth');
+const jwtFunc = require('./src/middleware/auth');
 
 // DB + Paystack
-const { init: initDB } = require('./db');
-const { init: initPaystack } = require('./utils/paystack');
+const { init: initDB } = require('./src/db');
+const { init: initPaystack } = require('./src/utils/paystack');
 require('dotenv').config();
 
 const { tokenAuth, requireAdmin } = jwtFunc;
@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));
 
 // Initialize sub-systems
-let db = initDB(__dirname);
+const db = initDB(__dirname);
 initPaystack();
 
 // Mount routes
