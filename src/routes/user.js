@@ -59,3 +59,9 @@ router.get('/listings', tokenAuth, (req, res) => {
 });
 
 module.exports = router;
+
+// Current user coin balance
+router.get('/coins', tokenAuth, (req, res) => {
+  const user = db.prepare('SELECT id, coins, email, full_name FROM users WHERE id = ?').get(req.user.id);
+  res.json({ coins: Number(user.coins || 0) });
+});

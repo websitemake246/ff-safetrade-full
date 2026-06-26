@@ -288,3 +288,16 @@ router.get('/listings/all', tokenAuth, requireAdmin, (req, res) => {
 });
 
 module.exports = router;
+
+// Coin transfer (admin only)
+router.post('/transfer-coins', tokenAuth, requireAdmin, (req, res) => {
+  const { to_email, amount } = req.body || {};
+  if (!to_email || !amount || Number(amount) <= 0) return res.status(400).json({ error: 'to_email and positive amount required' });
+  const target = db.prepare('SELECT id, coins FROM users WHERE email = ?').get(to_email);
+  if (!target) return res.status(404).json({ error: 'User not found' });
+  const current = Number(target.coins || 0);
+  db.prepare('UPDATE users SET coins = ?, updated_at = ? WHERE id = ?').run(current + Number(amount), new Date().toISOString(), target.id);
+  db.prepare("INSERT INTO activity_logs (admin_id, action, target_type, target_id, details) VALUES (?, ?, ?, ?, ?)")
+    .run(req.user.id, 'coin_transfer', 'user', target.id, JSON.stringify({ to_email, amount }));
+  res.json({ ok: true, user_id: target.id, new_coins: current + Number(amount) });
+});

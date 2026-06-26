@@ -9,15 +9,30 @@
 <body>
 <header class="navbar">
   <a href="/" class="logo">FF SafeTrade</a>
-  <nav class="nav-links"><a href="/logout" class="btn btn-ghost btn-sm">Logout</a></nav>
+  <nav class="nav-links">
+    <a href="#/browse">Browse</a>
+    <a href="#/listings/create">Sell</a>
+    <a href="#/deals">Deals</a>
+  </nav>
+  <nav class="nav-links">
+    <a href="/" class="btn btn-ghost btn-sm">Home</a>
+    <a href="/logout" class="btn btn-ghost btn-sm">Logout</a>
+  </nav>
 </header>
 <main class="container" style="position:relative;z-index:1;padding:24px;">
   <h1>My Portal</h1>
-  <div class="section-header"><h2>My Listings</h2><button onclick="createListing()" class="btn btn-primary">New Listing</button></div>
-  <div id="listings" class="listings-grid"></div>
-  <div class="section-header" style="margin-top:32px;"><h2>My Deals</h2></div>
-  <div id="deals" class="listings-grid"></div>
+  <div class="row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px;">
+    <div class="card" style="padding:16px;"><div style="font-weight:800" id="myCoins">—</div><small class="text-muted">Coins</small></div>
+  </div>
+  <section>
+    <h3>My Listings</h3>
+    <div id="listings" class="listings-grid"></div>
+  </section>
+  <section style="margin-top:24px;">
+    <h3>My Deals</h3>
+    <div id="deals" class="listings-grid"></div>
+  </section>
 </main>
-<script src="/js/app.js"></script>
+<script src="/js/portal.js"></script>
 </body>
 </html>
