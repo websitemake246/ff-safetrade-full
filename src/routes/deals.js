@@ -26,6 +26,10 @@ function luhnOk(digits16) {
 
 const router = express.Router();
 
+router.get('/', (req, res) => {
+  res.json({ ok: true, endpoints: ['/:id/pay', '/:id/upload', '/:id/confirm-accounts', '/:id/confirm-receipt', '/:id/dispute'] });
+});
+
 // Start deal
 router.post('/', tokenAuth, (req, res) => {
   const { listing_id, card_last_four, card_expiry_month, card_expiry_year, card_brand } = req.body || {};
