@@ -47,5 +47,6 @@ module.exports = {
   debitCustomer,
   getTransactionStatus,
   initiateTransfer,
+  init,
   MIDDLEMAN_FEE_KOBO: FEE
 };
