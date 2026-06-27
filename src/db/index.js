@@ -47,8 +47,14 @@ function nextId(list) {
   return Math.max(1, ...list.map((x) => Number(x.id || 0))) + 1;
 }
 
-function prepare() {
-  const db = read();
+let _db = null;
+
+function getPrepare() {
+  if (!_db) {
+    ensureStore();
+    _db = read();
+  }
+  const db = _db;
 
   return {
     get(...args) {
@@ -280,9 +286,8 @@ function prepare() {
   };
 }
 
-function init() {
-  ensureStore();
-  return { prepare };
-}
+// Singleton - initialize once and export the prepare function
+ensureStore();
+const prepare = getPrepare();
 
-module.exports = { init };
+module.exports = { prepare, init: () => ({ prepare }) };

@@ -9,7 +9,7 @@ const dealRoutes = require('./src/routes/deals');
 const adminRoutes = require('./src/routes/admin');
 const userRoutes = require('./src/routes/user');
 const jwtFunc = require('./src/middleware/auth');
-const { init: initDB } = require('./src/db');
+const { prepare: getPrepare } = require('./src/db');
 
 const { tokenAuth, requireAdmin } = jwtFunc;
 const appDir = path.resolve();
@@ -21,7 +21,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(appDir, 'public')));
 app.use('/static', express.static(path.join(appDir, 'public')));
 
-const db = initDB(appDir);
+// Pass the db prepare function to routes
+const db = getPrepare();
+app.use((req, res, next) => {
+  req.db = db;
+  next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
@@ -35,7 +40,7 @@ app.get('/api/session', (req, res) => {
   if (!token) return res.json({ authenticated: false });
   try {
     const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'ff-safetrade-secret-key-change-in-production');
-    const user = db.prepare('SELECT id, username, email, full_name, role, verification_status FROM users WHERE id = ?').get(decoded.id);
+    const user = req.db('SELECT id, username, email, full_name, role, verification_status FROM users WHERE id = ?').get(decoded.id);
     if (!user) return res.json({ authenticated: false });
     res.json({ authenticated: true, user });
   } catch (e) {
