@@ -1,67 +1,49 @@
 const express = require('express');
-const database = require('../db');
-require('dotenv').config();
-
-const db = database.getDB();
 const jwtFunc = require('../middleware/auth');
+const db = require('../db');
+
 const { tokenAuth } = jwtFunc;
 
 const router = express.Router();
 
-// Transaction history for current user (buyer or seller)
-router.get('/history', tokenAuth, (req, res) => {
-  const { as_buyer, as_seller } = req.query;
-  let query = `SELECT d.*, l.title, l.platform,
-                      u1.email as buyer_email, u1.full_name as buyer_name,
-                      u2.email as seller_email, u2.full_name as seller_name
-               FROM deals d
-               JOIN listings l ON d.listing_id = l.id
-               JOIN users u1 ON d.buyer_id = u1.id
-               JOIN users u2 ON d.seller_id = u2.id
-               WHERE `;
-  const params = [];
-  const conditions = [];
-  if (as_buyer !== 'false') { conditions.push('d.buyer_id = ?'); params.push(req.user.id); }
-  if (as_seller !== 'false') { conditions.push('d.seller_id = ?'); params.push(req.user.id); }
-  if (conditions.length === 0) { conditions.push('d.buyer_id = ?'); params.push(req.user.id); }
-  query += conditions.join(' OR ');
-  query += ' ORDER BY d.created_at DESC LIMIT 50';
-  res.json(db.prepare(query).all(...params));
-});
-
-// My deals (all roles)
+// Get user's deals (as buyer or seller)
 router.get('/deals', tokenAuth, (req, res) => {
-  let query = `SELECT d.*, l.title, l.platform, l.price_kobo,
-                      u1.email as buyer_email, u2.email as seller_email
-               FROM deals d
-               JOIN listings l ON d.listing_id = l.id
-               JOIN users u1 ON d.buyer_id = u1.id
-               JOIN users u2 ON d.seller_id = u2.id
-               WHERE d.buyer_id = ? OR d.seller_id = ?
-               ORDER BY d.created_at DESC`;
-  res.json(db.prepare(query).all(req.user.id, req.user.id));
-});
-
-// Specific deal
-router.get('/deals/:id', tokenAuth, (req, res) => {
-  const deal = db.prepare('SELECT * FROM deals WHERE id = ?').get(req.params.id);
-  if (!deal) return res.status(404).json({ error: 'Deal not found' });
-  const listing = db.prepare('SELECT * FROM listings WHERE id = ?').get(deal.listing_id);
-  const dispute = db.prepare('SELECT * FROM disputes WHERE deal_id = ?').get(deal.id);
-  const disputeMessages = dispute ? db.prepare('SELECT * FROM dispute_messages WHERE dispute_id = ? ORDER BY created_at ASC').all(dispute.id) : [];
-  res.json({ ...deal, listing, dispute, disputeMessages });
-});
-
-// My listings
-router.get('/listings', tokenAuth, (req, res) => {
-  const rows = db.prepare('SELECT * FROM listings WHERE user_id = ? ORDER BY created_at DESC').all(req.user.id);
+  const rows = db.prepare(
+    "SELECT d.*, l.title, l.platform, l.price_kobo FROM deals d JOIN listings l ON d.listing_id = l.id WHERE d.buyer_id = ? OR d.seller_id = ?"
+  ).all(req.user.id, req.user.id);
   res.json(rows);
 });
 
-module.exports = router;
-
-// Current user coin balance
-router.get('/coins', tokenAuth, (req, res) => {
-  const user = db.prepare('SELECT id, coins, email, full_name FROM users WHERE id = ?').get(req.user.id);
-  res.json({ coins: Number(user.coins || 0) });
+// Get user's listings
+router.get('/listings', tokenAuth, (req, res) => {
+  const rows = db.prepare('SELECT * FROM listings WHERE user_id = ?').all(req.user.id);
+  rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  res.json(rows);
 });
+
+// Get user profile with bank details
+router.get('/profile', tokenAuth, (req, res) => {
+  const user = db.prepare('SELECT id, username, email, phone, full_name, role, verification_status, bank_name, account_number, account_name FROM users WHERE id = ?').get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ user });
+});
+
+// Update user profile (bank details, phone, etc.)
+router.put('/profile', tokenAuth, (req, res) => {
+  const { phone, full_name, bank_name, account_number, account_name } = req.body || {};
+  const allowed = {};
+  if (phone) allowed.phone = phone;
+  if (full_name) allowed.full_name = full_name;
+  if (bank_name) allowed.bank_name = bank_name;
+  if (account_number) allowed.account_number = account_number;
+  if (account_name) allowed.account_name = account_name;
+  
+  if (Object.keys(allowed).length === 0) return res.status(400).json({ error: 'No valid fields to update' });
+  
+  db.prepare('UPDATE users SET ' + Object.keys(allowed).map(k => `${k} = ?`).join(', ') + ' WHERE id = ?').run(...Object.values(allowed), req.user.id);
+  
+  const user = db.prepare('SELECT id, username, email, phone, full_name, role, verification_status, bank_name, account_number, account_name FROM users WHERE id = ?').get(req.user.id);
+  res.json({ user });
+});
+
+module.exports = router;

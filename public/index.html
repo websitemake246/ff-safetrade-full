@@ -1,87 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FF SafeTrade</title>
-<link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FF SafeTrade - Free Fire Middleman Escrow</title>
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<canvas id="cyberBg" class="bg"></canvas>
-<div class="overlay"></div>
-<header class="navbar">
-  <a href="/" class="logo">⚡ FF SafeTrade</a>
-  <nav class="nav-links">
-    <a href="#/browse">Browse</a>
-    <a href="#/listings/create">Sell</a>
-    <a href="#/deals">Deals</a>
-    <a href="#/coins">Coins</a>
-  </nav>
-  <div class="nav-actions">
-    <a href="/login" class="btn btn-ghost btn-sm">Login</a>
-    <a href="/register" class="btn btn-primary btn-sm">Register</a>
-  </div>
-</header>
-<main class="container">
-  <section class="card" style="padding:24px;margin-bottom:20px;">
-    <h1 style="margin-top:0;">Middleman service for Free Fire trades</h1>
-    <p class="text-sec">Safe escrow. Instant coin top-ups. Verified sellers.</p>
-    <div class="alert">⚠️ Game accounts violate Garena ToS. Trade at your own risk.</div>
-    <div class="row" style="gap:10px;margin-top:12px;">
-      <a class="btn btn-primary btn-lg" href="#/browse">Browse listings</a>
-      <a class="btn btn-ghost btn-lg" href="#/listings/create">Create listing</a>
+  <canvas id="cyberBg" class="bg"></canvas>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+    <a href="/" class="logo">⚡ FF SafeTrade</a>
+    <nav class="nav-links">
+      <a href="#/browse">Browse</a>
+      <a href="#/sell">Sell</a>
+      <a href="#/deals">Deals</a>
+      <a href="#/profile">Profile</a>
+    </nav>
+    <div class="nav-actions" id="navActions">
+      <a href="#/login" class="btn btn-ghost btn-sm">Login</a>
+      <a href="#/register" class="btn btn-primary btn-sm">Register</a>
     </div>
-  </section>
+  </header>
 
-  <section id="authSection" class="card" style="padding:18px;margin-bottom:20px;">
-    <h2 style="margin-top:0;" id="authTitle">Login</h2>
-    <form id="authForm">
-      <input id="authUsername" class="form-control" placeholder="Username" required style="width:100%;margin-bottom:10px;">
-      <input id="authPhone" class="form-control" placeholder="Phone number" style="width:100%;margin-bottom:10px;display:none;">
-      <input id="authPassword" class="form-control" type="password" placeholder="Password" required style="width:100%;margin-bottom:10px;">
-      <button type="submit" class="btn btn-primary" style="width:100%;">Submit</button>
-    </form>
-    <p class="text-sec" style="margin-top:10px;" id="authSwitch">
-      <span id="authSwitchText">No account?</span>
-      <a href="#/register" id="authSwitchLink">Register</a>
-    </p>
-  </section>
-
-  <section id="listingsSection" class="card" style="padding:18px;margin-bottom:20px;display:none;" data-section="listing">
-    <h2 style="margin-top:0;">Create Listing</h2>
-    <form id="createForm">
-      <div class="row" style="flex-wrap:wrap;gap:10px;">
-        <input id="listTitle" class="form-control" placeholder="Title" required style="flex:1;min-width:180px;">
-        <select id="listPlatform" class="form-control" style="min-width:140px;">
-          <option>Free Fire</option><option>Valorant</option><option>CS:GO</option><option>League of Legends</option><option>Fortnite</option><option>Roblox</option><option>Other</option>
-        </select>
+  <main class="container" id="app">
+    <!-- Hero Section -->
+    <section id="heroSection" class="card" style="padding: 32px; margin-bottom: 24px; text-align: center;">
+      <h1 style="margin: 0 0 12px; font-family: 'Orbitron', monospace; font-size: 2rem; color: #f5ccff;">Middleman Escrow for Free Fire Trades</h1>
+      <p class="text-sec" style="font-size: 1.1rem; margin-bottom: 20px;">Safe escrow • Instant coin top-ups • Verified sellers • ₦1,000 middleman fee</p>
+      <div class="alert">⚠️ Game accounts violate Garena ToS. Trade at your own risk.</div>
+      <div class="row" style="justify-content: center; gap: 12px; margin-top: 20px;">
+        <a class="btn btn-primary btn-lg" href="#/browse">Browse Listings</a>
+        <a class="btn btn-ghost btn-lg" href="#/sell">Create Listing</a>
       </div>
-      <textarea id="listDescription" class="form-control" placeholder="Description" style="width:100%;margin-top:10px;min-height:80px;"></textarea>
-      <div class="row" style="gap:10px;margin-top:10px;">
-        <input id="listPrice" class="form-control" type="number" min="10" placeholder="Price (₦)" required style="width:160px;">
+    </section>
+
+    <!-- Stats Section -->
+    <section id="statsSection" class="stats" style="display: none;">
+      <div class="stat-card"><div class="stat" id="statUsers">—</div><div class="label">Users</div></div>
+      <div class="stat-card"><div class="stat" id="statDeals">—</div><div class="label">Deals</div></div>
+      <div class="stat-card"><div class="stat" id="statListings">—</div><div class="label">Open Listings</div></div>
+      <div class="stat-card"><div class="stat" id="statFees">—</div><div class="label">Fees Collected (₦)</div></div>
+    </section>
+
+    <!-- Auth Section -->
+    <section id="authSection" class="card" style="display: none; max-width: 420px; margin: 0 auto;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace; text-align: center;" id="authTitle">Login</h2>
+      <form id="authForm">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Username</label>
+          <input id="authUsername" class="form-control" placeholder="Username" required autocomplete="username">
+        </div>
+        <div id="authEmailGroup" style="margin-bottom: 14px; display: none;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Email</label>
+          <input id="authEmail" class="form-control" type="email" placeholder="Email" autocomplete="email">
+        </div>
+        <div id="authPhoneGroup" style="margin-bottom: 14px; display: none;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Phone</label>
+          <input id="authPhone" class="form-control" placeholder="Phone (e.g., 2347014748748)" autocomplete="tel">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Password</label>
+          <input id="authPassword" class="form-control" type="password" placeholder="Password" required autocomplete="current-password">
+        </div>
+        <div id="authNameGroup" style="margin-bottom: 14px; display: none;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Full Name</label>
+          <input id="authName" class="form-control" placeholder="Full Name" autocomplete="name">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit</button>
+      </form>
+      <p class="text-sec" style="margin-top: 16px; text-align: center;" id="authSwitch">
+        <span id="authSwitchText">No account?</span>
+        <a href="#/register" id="authSwitchLink" style="color: var(--accent);">Register</a>
+      </p>
+    </section>
+
+    <!-- Sell Section -->
+    <section id="sellSection" class="card" style="display: none; max-width: 600px; margin: 0 auto;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">Create Listing</h2>
+      <form id="createForm">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Title</label>
+          <input id="listTitle" class="form-control" placeholder="e.g., Free Fire Account - 500 Diamonds + Skins" required>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Platform</label>
+          <select id="listPlatform" class="form-control" required>
+            <option value="Free Fire">Free Fire</option>
+            <option value="Valorant">Valorant</option>
+            <option value="CS:GO">CS:GO</option>
+            <option value="League of Legends">League of Legends</option>
+            <option value="Fortnite">Fortnite</option>
+            <option value="Roblox">Roblox</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Description</label>
+          <textarea id="listDescription" class="form-control" placeholder="Describe the account: rank, items, diamonds, etc." rows="4" required></textarea>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Price (₦)</label>
+          <input id="listPrice" class="form-control" type="number" min="100" placeholder="Price in Naira" required>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Evidence URLs (one per line)</label>
+          <textarea id="listEvidence" class="form-control" placeholder="Screenshot URLs proving ownership" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Listing</button>
+      </form>
+    </section>
+
+    <!-- Browse Section -->
+    <section id="browseSection" class="card" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <h2 style="margin: 0; font-family: 'Orbitron', monospace;">Browse Listings</h2>
+        <a href="#/sell" class="btn btn-ghost btn-sm">+ Create Listing</a>
       </div>
-      <textarea id="listEvidence" class="form-control" placeholder="Evidence URLs (one per line)" style="width:100%;margin-top:10px;min-height:70px;"></textarea>
-      <button type="submit" class="btn btn-primary" style="margin-top:10px;">Create listing</button>
-    </form>
-  </section>
+      <div id="listGrid" class="listings-grid"></div>
+    </section>
 
-  <section class="stats">
-    <div class="card"><div class="stat" id="statUsers">—</div><div class="label">Users</div></div>
-    <div class="card"><div class="stat" id="statDeals">—</div><div class="label">Deals</div></div>
-    <div class="card"><div class="stat" id="statListings">—</div><div class="label">Open listings</div></div>
-    <div class="card"><div class="stat" id="statFees">—</div><div class="label">Fees collected (₦)</div></div>
-  </section>
+    <!-- My Listings Section -->
+    <section id="myListingsSection" class="card" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <h2 style="margin: 0; font-family: 'Orbitron', monospace;">My Listings</h2>
+        <a href="#/sell" class="btn btn-ghost btn-sm">+ New Listing</a>
+      </div>
+      <div id="myListGrid" class="listings-grid"></div>
+    </section>
 
-  <section id="browseSection" class="card" style="padding:18px;margin-top:22px;">
-    <h2 style="margin-top:0;">Browse</h2>
-    <div id="listGrid" class="listings-grid"></div>
-  </section>
+    <!-- Deals Section -->
+    <section id="dealsSection" class="card" style="display: none;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">My Deals</h2>
+      <div class="tabs" style="margin-bottom: 20px;">
+        <button class="tab active" data-tab="active">Active</button>
+        <button class="tab" data-tab="completed">Completed</button>
+        <button class="tab" data-tab="disputed">Disputed</button>
+      </div>
+      <div id="dealList"></div>
+    </section>
 
-  <section id="dealsSection" class="card" style="padding:18px;margin-top:22px;">
-    <h2 style="margin-top:0;">My Deals</h2>
-    <div id="dealList"></div>
-  </section>
-</main>
-<script src="/static/js/app.js?v=3"></script>
+    <!-- Profile Section -->
+    <section id="profileSection" class="card" style="display: none; max-width: 600px; margin: 0 auto;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">Profile</h2>
+      <form id="profileForm">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Username</label>
+          <input id="profileUsername" class="form-control" disabled style="opacity: 0.6;">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Email</label>
+          <input id="profileEmail" class="form-control" disabled style="opacity: 0.6;">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Phone</label>
+          <input id="profilePhone" class="form-control" placeholder="2347014748748">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Full Name</label>
+          <input id="profileName" class="form-control" placeholder="Full Name">
+        </div>
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
+        <h3 style="font-family: 'Orbitron', monospace; font-size: 0.9rem; margin-bottom: 16px; color: var(--accent);">Bank Details (for payouts)</h3>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Bank Name</label>
+          <input id="profileBankName" class="form-control" placeholder="e.g., Access Bank, GTBank, etc.">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Account Number</label>
+          <input id="profileAccountNumber" class="form-control" placeholder="10-digit account number">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; margin-bottom: 6px; color: var(--text-sec); font-size: 0.85rem;">Account Name</label>
+          <input id="profileAccountName" class="form-control" placeholder="Name on account">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+      </form>
+    </section>
+
+    <!-- Deal Detail Modal -->
+    <div id="dealModal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Deal Details</h3>
+          <button class="modal-close" id="closeDealModal">×</button>
+        </div>
+        <div class="modal-body" id="dealModalBody"></div>
+        <div class="modal-footer" id="dealModalFooter"></div>
+      </div>
+    </div>
+
+    <!-- Credentials Modal -->
+    <div id="credModal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Account Credentials</h3>
+          <button class="modal-close" id="closeCredModal">×</button>
+        </div>
+        <div class="modal-body" id="credModalBody"></div>
+        <div class="modal-footer" id="credModalFooter"></div>
+      </div>
+    </div>
+
+    <!-- Dispute Modal -->
+    <div id="disputeModal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Dispute</h3>
+          <button class="modal-close" id="closeDisputeModal">×</button>
+        </div>
+        <div class="modal-body" id="disputeModalBody"></div>
+        <div class="modal-footer" id="disputeModalFooter"></div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" style="position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px;"></div>
+  </main>
+
+  <script src="/static/js/app.js?v=4"></script>
 </body>
 </html>

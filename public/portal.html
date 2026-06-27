@@ -1,39 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal — FF SafeTrade</title>
-<link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FF SafeTrade - Portal</title>
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<canvas id="cyberBg" class="bg"></canvas>
-<div class="overlay"></div>
-<header class="navbar">
-  <a href="/" class="logo">⚡ FF SafeTrade</a>
-  <nav class="nav-links">
-    <a href="#/browse">Browse</a>
-    <a href="#/listings/create">Sell</a>
-    <a href="#/deals">Deals</a>
-  </nav>
-  <div class="nav-actions">
-    <a href="/" class="btn btn-ghost btn-sm">Home</a>
-    <a href="/logout" class="btn btn-ghost btn-sm">Logout</a>
-  </div>
-</header>
-<main class="container">
-  <div class="stats">
-    <div class="card"><div class="stat" id="myCoins">—</div><div class="label">Coins</div></div>
-  </div>
-  <section>
-    <h2>My Listings</h2>
-    <div id="listings"></div>
-  </section>
-  <section style="margin-top:24px;">
-    <h2>My Deals</h2>
-    <div id="deals"></div>
-  </section>
-</main>
-<script src="/static/js/portal.js?v=3"></script>
+  <canvas id="cyberBg" class="bg"></canvas>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+    <a href="/" class="logo">⚡ FF SafeTrade</a>
+    <nav class="nav-links">
+      <a href="#/deals">My Deals</a>
+      <a href="#/listings">My Listings</a>
+      <a href="#/profile">Profile</a>
+    </nav>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="btn btn-ghost btn-sm">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card" style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <h2 style="margin: 0; font-family: 'Orbitron', monospace;">Welcome back, <span id="userName"></span></h2>
+        <span class="badge" id="userRole"></span>
+      </div>
+      <div class="stats" style="margin-top: 0;">
+        <div class="stat-card"><div class="stat" id="myDealsCount">0</div><div class="label">My Deals</div></div>
+        <div class="stat-card"><div class="stat" id="myListingsCount">0</div><div class="label">My Listings</div></div>
+        <div class="stat-card"><div class="stat" id="myCompletedCount">0</div><div class="label">Completed</div></div>
+        <div class="stat-card"><div class="stat" id="mySpentCount">0</div><div class="label">Total Spent (₦)</div></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px; font-family: 'Orbitron', monospace; font-size: 1rem;">Quick Actions</h3>
+      <div class="row" style="gap: 12px; flex-wrap: wrap;">
+        <a href="#/sell" class="btn btn-primary">+ Create Listing</a>
+        <a href="#/browse" class="btn btn-ghost">Browse Market</a>
+        <a href="#/deals" class="btn btn-ghost">View Deals</a>
+        <a href="#/profile" class="btn btn-ghost">Edit Profile</a>
+      </div>
+    </section>
+
+    <section class="card" id="activeDealsSection">
+      <h3 style="margin: 0 0 16px; font-family: 'Orbitron', monospace; font-size: 1rem;">Active Deals</h3>
+      <div id="activeDealsList"></div>
+    </section>
+
+    <section class="card" id="myListingsSection" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="margin: 0; font-family: 'Orbitron', monospace; font-size: 1rem;">My Listings</h3>
+        <a href="#/sell" class="btn btn-ghost btn-sm">+ New Listing</a>
+      </div>
+      <div id="portalMyListingsGrid" class="listings-grid"></div>
+    </section>
+  </main>
+
+  <div id="toastContainer" style="position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px;"></div>
+
+  <script src="/static/js/app.js?v=4"></script>
+  <script>
+    // Portal-specific init
+    window.addEventListener('load', async () => {
+      const token = localStorage.getItem('ff_token');
+      if (!token) { location.href = '/login'; return; }
+      
+      async function loadPortal() {
+        try {
+          const [me, deals, listings] = await Promise.all([
+            fetch('/api/auth/me', { headers: { 'x-ff-token': token } }).then(r => r.json()),
+            fetch('/api/deals/my', { headers: { 'x-ff-token': token } }).then(r => r.json()),
+            fetch('/api/listings/mine', { headers: { 'x-ff-token': token } }).then(r => r.json())
+          ]);
+          
+          if (me.user) {
+            document.getElementById('userName').textContent = me.user.username;
+            document.getElementById('userRole').textContent = me.user.role;
+            document.getElementById('userRole').className = 'badge' + (me.user.role === 'admin' ? ' status-verified' : '');
+            
+            document.getElementById('myDealsCount').textContent = (deals || []).length;
+            document.getElementById('myListingsCount').textContent = (listings || []).length;
+            
+            const completed = (deals || []).filter(d => d.status === 'completed').length;
+            document.getElementById('myCompletedCount').textContent = completed;
+            
+            const spent = (deals || []).filter(d => d.buyer_id === me.user.id && d.status === 'completed')
+              .reduce((s, d) => s + Number(d.amount_kobo || 0), 0);
+            document.getElementById('mySpentCount').textContent = (spent / 100).toLocaleString();
+          }
+          
+          // Active deals
+          const activeDeals = (deals || []).filter(d => 
+            ['pending_payment', 'payment_confirmed', 'accounts_shared', 'verified', 'disputed'].includes(d.status)
+          );
+          const activeHtml = activeDeals.map(d => `
+            <div class="deal-card">
+              <div class="deal-header">
+                <div class="deal-title">${d.title || 'Deal #' + d.id.slice(0,8)}</div>
+                <span class="badge status-${d.status}">${d.status.replace(/_/g, ' ')}</span>
+              </div>
+              <div class="deal-body">
+                <div><strong>Platform:</strong> ${d.platform}</div>
+                <div><strong>Amount:</strong> ₦${(d.amount_kobo / 100).toLocaleString()}</div>
+                <div><strong>Fee:</strong> ₦${(d.middleman_fee_kobo / 100).toLocaleString()}</div>
+              </div>
+              <div class="deal-actions">${getDealActions(d, me.user.id)}</div>
+            </div>
+          `).join('') || '<div class="text-sec" style="text-align:center;padding:20px;">No active deals</div>';
+          document.getElementById('activeDealsList').innerHTML = activeHtml;
+          
+          // My listings
+          const myListHtml = (listings || []).map(l => `
+            <div class="listing-card">
+              <div class="listing-title">${l.title}</div>
+              <div class="listing-meta">
+                <span>${l.platform}</span>
+                <span class="badge status-${l.status}">${l.status}</span>
+                <span>Views: ${l.view_count || 0}</span>
+              </div>
+              <div class="listing-price">₦${(l.price_kobo / 100).toLocaleString()}</div>
+              <div class="deal-actions" style="margin-top:12px;">
+                <button class="btn btn-ghost btn-sm" onclick="editListing(${l.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteListing(${l.id})">Delete</button>
+              </div>
+            </div>
+          `).join('') || '<div class="text-sec" style="text-align:center;padding:40px;">No listings yet</div>';
+          document.getElementById('portalMyListingsGrid').innerHTML = myListHtml;
+          
+        } catch (e) {
+          console.error('Portal load error:', e);
+        }
+      }
+      
+      function getDealActions(deal, userId) {
+        const isBuyer = deal.buyer_id === userId;
+        const isSeller = deal.seller_id === userId;
+        
+        if (deal.status === 'pending_payment' && isBuyer) {
+          return `<button class="btn btn-primary btn-sm" onclick="payDeal('${deal.id}')">Pay Now</button>`;
+        }
+        if (deal.status === 'payment_confirmed' && isSeller) {
+          return `<button class="btn btn-primary btn-sm" onclick="uploadCredentials('${deal.id}')">Upload Credentials</button>`;
+        }
+        if (deal.status === 'verified' && isBuyer) {
+          return `
+            <button class="btn btn-primary btn-sm" onclick="viewCredentials('${deal.id}')">View Credentials</button>
+            <button class="btn btn-primary btn-sm" onclick="confirmDeal('${deal.id}')">Confirm & Complete</button>
+            <button class="btn btn-danger btn-sm" onclick="openDispute('${deal.id}')">Dispute</button>
+          `;
+        }
+        if (deal.status === 'completed') return '<span class="text-sec">Completed ✓</span>';
+        if (deal.status === 'disputed') return '<button class="btn btn-ghost btn-sm" onclick="viewDispute(\'' + deal.id + '\')">View Dispute</button>';
+        return '<span class="text-sec">Waiting for ' + (isBuyer ? 'seller' : 'buyer') + '...</span>';
+      }
+      
+      await loadPortal();
+      
+      // Logout
+      document.getElementById('logoutBtn').onclick = () => {
+        localStorage.removeItem('ff_token');
+        location.href = '/login';
+      };
+    });
+  </script>
 </body>
 </html>

@@ -1,58 +1,439 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — FF SafeTrade</title>
-<link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FF SafeTrade - Admin Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<canvas id="cyberBg" class="bg"></canvas>
-<div class="overlay"></div>
-<header class="navbar">
-  <a href="/" class="logo">🛡️ FF Admin</a>
-  <nav class="nav-links">
-    <a href="#/admin">Dashboard</a>
-    <a href="#/admin/users">Users</a>
-    <a href="#/admin/deals">Deals</a>
-    <a href="#/admin/disputes">Disputes</a>
-  </nav>
-  <div class="nav-actions">
-    <a href="/" class="btn btn-ghost btn-sm">Home</a>
-    <a href="/logout" class="btn btn-ghost btn-sm">Logout</a>
+  <canvas id="cyberBg" class="bg"></canvas>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+    <a href="/" class="logo">⚡ FF SafeTrade Admin</a>
+    <nav class="nav-links">
+      <a href="#/overview">Overview</a>
+      <a href="#/users">Users</a>
+      <a href="#/deals">All Deals</a>
+      <a href="#/disputes">Disputes</a>
+      <a href="#/activity">Activity</a>
+    </nav>
+    <div class="nav-actions">
+      <button id="logoutBtn" class="btn btn-ghost btn-sm">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="adminTabs" class="tabs" style="margin-bottom: 24px;">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="users">Users</button>
+      <button class="tab" data-tab="deals">All Deals</button>
+      <button class="tab" data-tab="disputes">Disputes</button>
+      <button class="tab" data-tab="activity">Activity</button>
+    </div>
+
+    <section id="adminOverview" class="card" style="display: block;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">Platform Overview</h2>
+      <div class="stats" style="margin-top: 0;" id="adminStats">
+        <div class="stat-card"><div class="stat" id="statTotalUsers">—</div><div class="label">Total Users</div></div>
+        <div class="stat-card"><div class="stat" id="statTotalDeals">—</div><div class="label">Total Deals</div></div>
+        <div class="stat-card"><div class="stat" id="statOpenListings">—</div><div class="label">Open Listings</div></div>
+        <div class="stat-card"><div class="stat" id="statPendingDeals">—</div><div class="label">Pending Payment</div></div>
+        <div class="stat-card"><div class="stat" id="statActiveDeals">—</div><div class="label">Active Deals</div></div>
+        <div class="stat-card"><div class="stat" id="statCompletedDeals">—</div><div class="label">Completed</div></div>
+        <div class="stat-card"><div class="stat" id="statDisputedDeals">—</div><div class="label">Disputed</div></div>
+        <div class="stat-card"><div class="stat" id="statFeesCollected">—</div><div class="label">Fees Collected (₦)</div></div>
+        <div class="stat-card"><div class="stat" id="statTotalVolume">—</div><div class="label">Total Volume (₦)</div></div>
+      </div>
+    </section>
+
+    <section id="adminUsers" class="card" style="display: none;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">User Management</h2>
+      <div id="usersTable" style="overflow-x: auto;"></div>
+    </section>
+
+    <section id="adminDeals" class="card" style="display: none;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">All Deals</h2>
+      <div id="allDealsList"></div>
+    </section>
+
+    <section id="adminDisputes" class="card" style="display: none;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">Dispute Resolution</h2>
+      <div id="disputesList"></div>
+    </section>
+
+    <section id="adminActivity" class="card" style="display: none;">
+      <h2 style="margin: 0 0 20px; font-family: 'Orbitron', monospace;">Activity Log</h2>
+      <div id="activityList"></div>
+    </section>
+  </main>
+
+  <!-- Deal Detail Modal -->
+  <div id="adminDealModal" class="modal-overlay" style="display: none;">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Deal Details</h3>
+        <button class="modal-close" id="closeAdminDealModal">×</button>
+      </div>
+      <div class="modal-body" id="adminDealModalBody"></div>
+      <div class="modal-footer" id="adminDealModalFooter"></div>
+    </div>
   </div>
-</header>
-<main class="container">
-  <section class="stats">
-    <div class="card"><div class="stat" id="sUsers">—</div><div class="label">Users</div></div>
-    <div class="card"><div class="stat" id="sListings">—</div><div class="label">Listings</div></div>
-    <div class="card"><div class="stat" id="sDeals">—</div><div class="label">Deals</div></div>
-    <div class="card"><div class="stat" id="sDisputed">—</div><div class="label">Disputed</div></div>
-    <div class="card"><div class="stat" id="sVolume">—</div><div class="label">Volume (₦)</div></div>
-    <div class="card"><div class="stat" id="sRevenue">—</div><div class="label">Revenue (₦)</div></div>
-  </section>
 
-  <section class="card">
-    <h2>Send Coins</h2>
-    <div class="row">
-      <input id="toEmail" class="form-control" placeholder="user@example.com">
-      <input id="coinAmount" class="form-control" type="number" min="1" placeholder="1000">
-      <button id="sendCoinsBtn" class="btn btn-primary">Send coins</button>
+  <!-- Dispute Detail Modal -->
+  <div id="adminDisputeModal" class="modal-overlay" style="display: none;">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Dispute Resolution</h3>
+        <button class="modal-close" id="closeAdminDisputeModal">×</button>
+      </div>
+      <div class="modal-body" id="adminDisputeModalBody"></div>
+      <div class="modal-footer" id="adminDisputeModalFooter"></div>
     </div>
-    <p class="text-sec">1 coin = ₦1</p>
-    <div id="coinResult"></div>
-  </section>
+  </div>
 
-  <section class="card">
-    <h2>Registration Stats</h2>
-    <div class="stats">
-      <div class="card"><div class="stat" id="rTotalUsers">—</div><div class="label">Total users</div></div>
-      <div class="card"><div class="stat" id="rOpenListings">—</div><div class="label">Open listings</div></div>
-      <div class="card"><div class="stat" id="rPendingPayment">—</div><div class="label">Pending payment</div></div>
-      <div class="card"><div class="stat" id="rActiveDeals">—</div><div class="label">Active deals</div></div>
-    </div>
-  </section>
-</main>
-<script src="/static/js/admin.js?v=3"></script>
+  <div id="toastContainer" style="position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px;"></div>
+
+  <script src="/static/js/app.js?v=4"></script>
+  <script>
+    // Admin-specific init
+    window.addEventListener('load', async () => {
+      const token = localStorage.getItem('ff_token');
+      if (!token) { location.href = '/login'; return; }
+      
+      async function loadAdmin() {
+        try {
+          const me = await fetch('/api/auth/me', { headers: { 'x-ff-token': token } }).then(r => r.json());
+          if (!me.user || me.user.role !== 'admin') {
+            location.href = '/';
+            return;
+          }
+          
+          // Load stats
+          const stats = await fetch('/api/admin/stats', { headers: { 'x-ff-token': token } }).then(r => r.json());
+          document.getElementById('statTotalUsers').textContent = stats.totalUsers;
+          document.getElementById('statTotalDeals').textContent = stats.totalDeals;
+          document.getElementById('statOpenListings').textContent = stats.openListings;
+          document.getElementById('statPendingDeals').textContent = stats.pendingDeals;
+          document.getElementById('statActiveDeals').textContent = stats.activeDeals;
+          document.getElementById('statCompletedDeals').textContent = stats.completedDeals;
+          document.getElementById('statDisputedDeals').textContent = stats.disputedDeals;
+          document.getElementById('statFeesCollected').textContent = (stats.feesCollected / 100).toLocaleString();
+          document.getElementById('statTotalVolume').textContent = (stats.totalVolume / 100).toLocaleString();
+          
+          // Tab switching
+          document.querySelectorAll('#adminTabs .tab').forEach(tab => {
+            tab.onclick = () => {
+              document.querySelectorAll('#adminTabs .tab').forEach(t => t.classList.remove('active'));
+              tab.classList.add('active');
+              document.querySelectorAll('#adminOverview, #adminUsers, #adminDeals, #adminDisputes, #adminActivity')
+                .forEach(s => s.style.display = 'none');
+              document.getElementById('admin' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).style.display = 'block';
+              loadTabContent(tab.dataset.tab);
+            };
+          });
+          
+          await loadTabContent('overview');
+          
+        } catch (e) {
+          console.error('Admin load error:', e);
+          location.href = '/';
+        }
+      }
+      
+      async function loadTabContent(tab) {
+        try {
+          if (tab === 'users') {
+            const users = await fetch('/api/admin/users', { headers: { 'x-ff-token': token } }).then(r => r.json());
+            document.getElementById('usersTable').innerHTML = `
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--border);text-align:left;">
+                    <th style="padding:12px;color:var(--text-sec);font-size:0.75rem;text-transform:uppercase;">Username</th>
+                    <th style="padding:12px;color:var(--text-sec);font-size:0.75rem;text-transform:uppercase;">Email</th>
+                    <th style="padding:12px;color:var(--text-sec);font-size:0.75rem;text-transform:uppercase;">Phone</th>
+                    <th style="padding:12px;color:var(--text-sec);font-size:0.75rem;text-transform:uppercase;">Role</th>
+                    <th style="padding:12px;color:var(--text-sec);font-size:0.75rem;text-transform:uppercase;">Status</th>
+                    <th style="padding:12px;color:var(--text-sec);font-size:0.75rem;text-transform:uppercase;">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${users.map(u => `
+                    <tr style="border-bottom:1px solid rgba(180,130,255,0.1);">
+                      <td style="padding:12px;">${u.username}</td>
+                      <td style="padding:12px;">${u.email || '-'}</td>
+                      <td style="padding:12px;">${u.phone || '-'}</td>
+                      <td style="padding:12px;"><span class="badge ${u.role === 'admin' ? 'status-verified' : ''}">${u.role}</span></td>
+                      <td style="padding:12px;"><span class="badge ${u.verification_status === 'verified' ? 'status-verified' : 'status-pending_payment'}">${u.verification_status}</span></td>
+                      <td style="padding:12px;color:var(--text-sec);font-size:0.85rem;">${new Date(u.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          } else if (tab === 'deals') {
+            const deals = await fetch('/api/admin/deals', { headers: { 'x-ff-token': token } }).then(r => r.json());
+            document.getElementById('allDealsList').innerHTML = deals.map(d => `
+              <div class="deal-card">
+                <div class="deal-header">
+                  <div class="deal-title">${d.title || 'Deal #' + d.id.slice(0,8)}</div>
+                  <span class="badge status-${d.status}">${d.status.replace(/_/g, ' ')}</span>
+                </div>
+                <div class="deal-body">
+                  <div><strong>Platform:</strong> ${d.platform}</div>
+                  <div><strong>Amount:</strong> ₦${(d.amount_kobo / 100).toLocaleString()}</div>
+                  <div><strong>Fee:</strong> ₦${(d.middleman_fee_kobo / 100).toLocaleString()}</div>
+                  <div><strong>Buyer:</strong> ${d.buyer_username}</div>
+                  <div><strong>Seller:</strong> ${d.seller_username}</div>
+                </div>
+                <div class="deal-actions">
+                  <button class="btn btn-primary btn-sm" onclick="openAdminDeal('${d.id}')">View Details</button>
+                </div>
+              </div>
+            `).join('') || '<div class="text-sec" style="text-align:center;padding:40px;">No deals</div>';
+          } else if (tab === 'disputes') {
+            const disputes = await fetch('/api/admin/disputes', { headers: { 'x-ff-token': token } }).then(r => r.json());
+            document.getElementById('disputesList').innerHTML = disputes.map(d => `
+              <div class="deal-card">
+                <div class="deal-header">
+                  <div class="deal-title">Dispute for: ${d.title || 'Deal #' + d.deal_id.slice(0,8)}</div>
+                  <span class="badge status-${d.status}">${d.status}</span>
+                </div>
+                <div class="deal-body">
+                  <div><strong>Reason:</strong> ${d.reason}</div>
+                  <div><strong>Buyer:</strong> ${d.buyer_username}</div>
+                  <div><strong>Seller:</strong> ${d.seller_username}</div>
+                  <div><strong>Opened:</strong> ${new Date(d.created_at).toLocaleString()}</div>
+                </div>
+                <div class="deal-actions">
+                  <button class="btn btn-primary btn-sm" onclick="openAdminDispute('${d.id}')">Resolve</button>
+                </div>
+              </div>
+            `).join('') || '<div class="text-sec" style="text-align:center;padding:40px;">No disputes</div>';
+          } else if (tab === 'activity') {
+            const activities = await fetch('/api/admin/activity', { headers: { 'x-ff-token': token } }).then(r => r.json());
+            document.getElementById('activityList').innerHTML = activities.map(a => `
+              <div class="deal-card">
+                <div><strong>${a.action}</strong> on ${a.target_type} #${a.target_id}</div>
+                <div class="text-sec" style="margin-top:4px;">${a.details || ''}</div>
+                <div class="text-sec" style="font-size:0.75rem;">${new Date(a.created_at).toLocaleString()}</div>
+              </div>
+            `).join('') || '<div class="text-sec" style="text-align:center;padding:40px;">No activity</div>';
+          }
+        } catch (e) {
+          console.error('Tab load error:', e);
+        }
+      }
+      
+      window.openAdminDeal = async function(dealId) {
+        try {
+          const deal = await fetch('/api/admin/deals/' + dealId, { headers: { 'x-ff-token': token } }).then(r => r.json());
+          let creds = deal.credentials;
+          
+          document.getElementById('adminDealModalBody').innerHTML = `
+            <div style="margin-bottom:16px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+                <div><strong>Deal ID:</strong> ${deal.id}</div>
+                <div><strong>Status:</strong> <span class="badge status-${deal.status}">${deal.status.replace(/_/g, ' ')}</span></div>
+                <div><strong>Platform:</strong> ${deal.platform}</div>
+                <div><strong>Amount:</strong> ₦${(deal.amount_kobo / 100).toLocaleString()}</div>
+                <div><strong>Fee:</strong> ₦${(deal.middleman_fee_kobo / 100).toLocaleString()}</div>
+                <div><strong>Buyer:</strong> ${deal.buyer?.username} (${deal.buyer?.email})</div>
+                <div><strong>Seller:</strong> ${deal.seller?.username} (${deal.seller?.email})</div>
+              </div>
+              <div>
+                <strong>Credentials:</strong>
+                <div class="credential-box">
+                  <div class="credential-row"><span class="credential-label">Email/Phone</span><span class="credential-value">${creds.ff_email || 'Not provided'}</span></div>
+                  <div class="credential-row"><span class="credential-label">Password</span><span class="credential-value">${creds.ff_password || 'Not provided'}</span></div>
+                  <div class="credential-row"><span class="credential-label">UID</span><span class="credential-value">${creds.ff_uid || 'Not provided'}</span></div>
+                  <div class="credential-row"><span class="credential-label">Notes</span><span class="credential-value">${creds.notes || 'None'}</span></div>
+                </div>
+              </div>
+              ${deal.seller ? `
+              <div style="margin-top:16px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;border:1px solid var(--border);">
+                <strong>Seller Bank Details:</strong>
+                <div style="margin-top:8px;display:grid;gap:4px;">
+                  <div>Bank: ${deal.seller.bank_name || 'Not provided'}</div>
+                  <div>Account: ${deal.seller.account_number || 'Not provided'}</div>
+                  <div>Name: ${deal.seller.account_name || 'Not provided'}</div>
+                </div>
+              </div>
+              ` : ''}
+            `;
+            
+            if (deal.status === 'accounts_shared') {
+              document.getElementById('adminDealModalFooter').innerHTML = `
+                <button class="btn btn-danger btn-sm" onclick="rejectDeal('${deal.id}')">Reject Credentials</button>
+                <button class="btn btn-primary" onclick="verifyDeal('${deal.id}')">Verify & Release</button>
+              `;
+            } else if (deal.status === 'completed') {
+              document.getElementById('adminDealModalFooter').innerHTML = `
+                <button class="btn btn-primary" onclick="payoutDeal('${deal.id}')">Confirm Payout</button>
+              `;
+            } else {
+              document.getElementById('adminDealModalFooter').innerHTML = `
+                <button class="btn btn-ghost" onclick="closeAdminDealModal.click()">Close</button>
+              `;
+            }
+            
+            document.getElementById('adminDealModal').style.display = 'flex';
+        } catch (e) {
+          console.error('Open deal error:', e);
+        }
+      };
+      
+      window.verifyDeal = async function(dealId) {
+        try {
+          await fetch('/api/admin/deals/' + dealId + '/verify', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-ff-token': token },
+            body: JSON.stringify({}) 
+          });
+          toast('Deal verified and released to buyer');
+          document.getElementById('adminDealModal').style.display = 'none';
+          loadTabContent('deals');
+        } catch (e) { toast(e.message || 'Failed', 'error'); }
+      };
+      
+      window.rejectDeal = async function(dealId) {
+        const reason = prompt('Rejection reason:');
+        if (!reason) return;
+        try {
+          await fetch('/api/admin/deals/' + dealId + '/reject', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-ff-token': token },
+            body: JSON.stringify({ reason }) 
+          });
+          toast('Credentials rejected, seller notified');
+          document.getElementById('adminDealModal').style.display = 'none';
+          loadTabContent('deals');
+        } catch (e) { toast(e.message || 'Failed', 'error'); }
+      };
+      
+      window.payoutDeal = async function(dealId) {
+        try {
+          await fetch('/api/admin/deals/' + dealId + '/payout', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-ff-token': token },
+            body: JSON.stringify({}) 
+          });
+          toast('Payout confirmed');
+          document.getElementById('adminDealModal').style.display = 'none';
+          loadTabContent('deals');
+        } catch (e) { toast(e.message || 'Failed', 'error'); }
+      };
+      
+      window.openAdminDispute = async function(disputeId) {
+        try {
+          const data = await fetch('/api/admin/disputes/' + disputeId, { headers: { 'x-ff-token': token } }).then(r => r.json());
+          const { dispute, messages, deal } = data;
+          
+          document.getElementById('adminDisputeModalBody').innerHTML = `
+            <div style="margin-bottom:16px;">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+                <div><strong>Dispute ID:</strong> ${dispute.id}</div>
+                <div><strong>Deal:</strong> ${deal.title || deal.id}</div>
+                <div><strong>Buyer:</strong> ${deal.buyer_username}</div>
+                <div><strong>Seller:</strong> ${deal.seller_username}</div>
+                <div><strong>Status:</strong> <span class="badge status-${dispute.status}">${dispute.status}</span></div>
+                <div><strong>Reason:</strong> ${dispute.reason}</div>
+              </div>
+              <div>
+                <strong>Messages:</strong>
+                <div style="max-height:300px;overflow-y:auto;margin-top:12px;">
+                  ${messages.map(m => `
+                    <div class="dispute-message">
+                      <div class="dispute-message-header">
+                        <span class="dispute-message-sender ${m.user_role === 'admin' ? 'admin' : ''}">${m.user_username} (${m.user_role})</span>
+                        <span class="dispute-message-time">${new Date(m.created_at).toLocaleString()}</span>
+                      </div>
+                      <div>${m.message}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              <div style="margin-top:16px;">
+                <textarea id="adminDisputeMsg" class="form-control" placeholder="Admin message..." rows="3"></textarea>
+              </div>
+            </div>
+          `;
+          
+          if (dispute.status === 'open') {
+            document.getElementById('adminDisputeModalFooter').innerHTML = `
+              <button class="btn btn-ghost btn-sm" onclick="sendAdminDisputeMsg('${dispute.id}')">Send Message</button>
+              <button class="btn btn-danger btn-sm" onclick="resolveDispute('${dispute.id}', true)">Refund Buyer</button>
+              <button class="btn btn-primary" onclick="resolveDispute('${dispute.id}', false)">Pay Seller</button>
+            `;
+          } else {
+            document.getElementById('adminDisputeModalFooter').innerHTML = `
+              <button class="btn btn-ghost" onclick="closeAdminDisputeModal.click()">Close</button>
+            `;
+          }
+          
+          document.getElementById('adminDisputeModal').style.display = 'flex';
+        } catch (e) {
+          console.error('Open dispute error:', e);
+        }
+      };
+      
+      window.sendAdminDisputeMsg = async function(disputeId) {
+        const msg = document.getElementById('adminDisputeMsg').value;
+        if (!msg.trim()) return;
+        try {
+          await fetch('/api/admin/disputes/' + disputeId + '/message', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-ff-token': token },
+            body: JSON.stringify({ message: msg }) 
+          });
+          toast('Message sent');
+          openAdminDispute(disputeId); // Reload
+        } catch (e) { toast(e.message || 'Failed', 'error'); }
+      };
+      
+      window.resolveDispute = async function(disputeId, refundBuyer) {
+        const resolution = prompt('Resolution notes:');
+        if (!resolution) return;
+        try {
+          await fetch('/api/admin/disputes/' + disputeId + '/resolve', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'x-ff-token': token },
+            body: JSON.stringify({ resolution, refund_buyer: refundBuyer }) 
+          });
+          toast('Dispute resolved: ' + (refundBuyer ? 'Buyer refunded' : 'Seller paid'));
+          document.getElementById('adminDisputeModal').style.display = 'none';
+          loadTabContent('disputes');
+        } catch (e) { toast(e.message || 'Failed', 'error'); }
+      };
+      
+      // Toast
+      window.toast = function(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        let borderColor = 'var(--accent)';
+        if (type === 'error') borderColor = 'var(--error)';
+        else if (type === 'success') borderColor = 'var(--success)';
+        el.style.cssText = 'background:linear-gradient(135deg,rgba(20,24,55,0.98),rgba(12,15,38,0.95));border:1px solid '+borderColor+';border-radius:10px;padding:12px 16px;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,0.5);animation:slideIn 0.3s ease;max-width:320px;';
+        el.textContent = message;
+        container.appendChild(el);
+        setTimeout(() => { el.style.animation = 'slideOut 0.3s ease'; setTimeout(() => el.remove(), 300); }, 4000);
+      };
+      
+      // Logout
+      document.getElementById('logoutBtn').onclick = () => {
+        localStorage.removeItem('ff_token');
+        location.href = '/login';
+      };
+      
+      // Modal close
+      document.getElementById('closeAdminDealModal').onclick = () => document.getElementById('adminDealModal').style.display = 'none';
+      document.getElementById('closeAdminDisputeModal').onclick = () => document.getElementById('adminDisputeModal').style.display = 'none';
+      document.getElementById('adminDealModal').onclick = (e) => { if (e.target === document.getElementById('adminDealModal')) document.getElementById('adminDealModal').style.display = 'none'; };
+      document.getElementById('adminDisputeModal').onclick = (e) => { if (e.target === document.getElementById('adminDisputeModal')) document.getElementById('adminDisputeModal').style.display = 'none'; };
+      
+      await loadAdmin();
+    });
+  </script>
 </body>
 </html>

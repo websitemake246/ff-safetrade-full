@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-
+require('dotenv').config();
 
 const authRoutes = require('./src/routes/auth');
 const listingRoutes = require('./src/routes/listings');
@@ -10,8 +10,6 @@ const adminRoutes = require('./src/routes/admin');
 const userRoutes = require('./src/routes/user');
 const jwtFunc = require('./src/middleware/auth');
 const { init: initDB } = require('./src/db');
-const { init: initPaystack } = require('./src/utils/paystack');
-require('dotenv').config();
 
 const { tokenAuth, requireAdmin } = jwtFunc;
 const appDir = path.resolve();
@@ -19,13 +17,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-;
-app.set('json spaces', 2);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(appDir, 'public')));
 app.use('/static', express.static(path.join(appDir, 'public')));
 
 const db = initDB(appDir);
-initPaystack();
 
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
@@ -35,14 +31,16 @@ app.use('/api/admin', tokenAuth, requireAdmin, adminRoutes);
 
 app.get('/api/session', (req, res) => {
   const header = req.headers.authorization || '';
-  const parts = header.split(' ');
-  const token = parts[1] || parts[0];
-  if (!token) {
-    const sessionCookie = req.cookies && req.cookies.ff_session;
-    if (!sessionCookie) return res.json({ authenticated: false });
-    // Cookie-only auth handled in tokenAuth via req.cookies if needed
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return res.json({ authenticated: false });
+  try {
+    const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'ff-safetrade-secret-key-change-in-production');
+    const user = db.prepare('SELECT id, username, email, full_name, role, verification_status FROM users WHERE id = ?').get(decoded.id);
+    if (!user) return res.json({ authenticated: false });
+    res.json({ authenticated: true, user });
+  } catch (e) {
+    res.json({ authenticated: false });
   }
-  res.json({ authenticated: !!token });
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(appDir, 'public', 'index.html')));
@@ -57,7 +55,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', details: err.message });
 });
 
-app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
+const server = app.listen(PORT, '0.0.0.0', () => console.log('FF SafeTrade running on port', PORT));
 
-const server = app.listen(PORT, () => console.log('FF SafeTrade running on port', PORT));
 module.exports = { app, server, db };
