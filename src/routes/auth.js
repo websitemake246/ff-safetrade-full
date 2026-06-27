@@ -12,10 +12,10 @@ router.post('/register', (req, res) => {
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   try {
     const passwordHash = hashPassword(password);
-    const info = db.prepare(
+    const info = db(
       'INSERT INTO users (username, email, phone, password, full_name, role, verification_status) VALUES (?, ?, ?, ?, ?, ?, ?)'
     ).run((username || '').toLowerCase(), (email || '').toLowerCase(), phone || '', passwordHash, full_name, 'user', 'unverified');
-    const user = db.prepare('SELECT id, username, email, phone, full_name, role, verification_status FROM users WHERE id = ?').get(info.lastInsertRowid);
+    const user = db('SELECT id, username, email, phone, full_name, role, verification_status FROM users WHERE id = ?').get(info.lastInsertRowid);
     const token = generateToken(user);
     res.json({ token, user });
   } catch (e) {
@@ -25,7 +25,7 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body || {};
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get((username || '').toLowerCase());
+  const user = db('SELECT * FROM users WHERE username = ?').get((username || '').toLowerCase());
   if (!user || !comparePassword(password, user.password)) return res.status(401).json({ error: 'Invalid credentials' });
   const token = generateToken(user);
   res.json({ token, user: { id: user.id, username: user.username, email: user.email || '', phone: user.phone || '', full_name: user.full_name, role: user.role, verification_status: user.verification_status } });
@@ -46,8 +46,8 @@ router.put('/me', tokenAuth, (req, res) => {
   
   if (Object.keys(allowed).length === 0) return res.status(400).json({ error: 'No valid fields to update' });
   
-  db.prepare('UPDATE users SET ' + Object.keys(allowed).map(k => `${k} = ?`).join(', ') + ' WHERE id = ?').run(...Object.values(allowed), req.user.id);
-  const user = db.prepare('SELECT id, username, email, phone, full_name, role, verification_status, bank_name, account_number, account_name FROM users WHERE id = ?').get(req.user.id);
+  db('UPDATE users SET ' + Object.keys(allowed).map(k => `${k} = ?`).join(', ') + ' WHERE id = ?').run(...Object.values(allowed), req.user.id);
+  const user = db('SELECT id, username, email, phone, full_name, role, verification_status, bank_name, account_number, account_name FROM users WHERE id = ?').get(req.user.id);
   res.json({ user });
 });
 

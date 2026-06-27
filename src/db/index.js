@@ -49,20 +49,16 @@ function nextId(list) {
 
 let _db = null;
 
-function getPrepare() {
+function prepare() {
   if (!_db) {
     ensureStore();
     _db = read();
   }
   const db = _db;
-
   return {
-    get(...args) {
-      return this.all(...args)[0] || { count: 0 };
-    },
+    get(...args) { return this.all(...args)[0] || { count: 0 }; },
     all(...args) {
       const sql = String(args[0] || '').trim();
-
       if (sql.toLowerCase().startsWith('select count(*)')) {
         if (sql.includes("role = 'user'")) return [{ count: (db.users || []).filter((x) => x.role === 'user').length }];
         if (sql.includes("role = 'admin'")) return [{ count: (db.users || []).filter((x) => x.role === 'admin').length }];
@@ -131,34 +127,22 @@ function getPrepare() {
       function updUsers(id, changes) {
         const arr = db.users || [];
         const idx = arr.findIndex((x) => Number(x.id) === Number(id));
-        if (idx >= 0) {
-          arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() };
-          out.changes = 1;
-        }
+        if (idx >= 0) { arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() }; out.changes = 1; }
       }
       function updListings(id, changes) {
         const arr = db.listings || [];
         const idx = arr.findIndex((x) => String(x.id) === String(id));
-        if (idx >= 0) {
-          arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() };
-          out.changes = 1;
-        }
+        if (idx >= 0) { arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() }; out.changes = 1; }
       }
       function updDeals(id, changes) {
         const arr = db.deals || [];
         const idx = arr.findIndex((x) => String(x.id) === String(id));
-        if (idx >= 0) {
-          arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() };
-          out.changes = 1;
-        }
+        if (idx >= 0) { arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() }; out.changes = 1; }
       }
       function updDisputes(id, changes) {
         const arr = db.disputes || [];
         const idx = arr.findIndex((x) => String(x.id) === String(id));
-        if (idx >= 0) {
-          arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() };
-          out.changes = 1;
-        }
+        if (idx >= 0) { arr[idx] = { ...arr[idx], ...changes, updated_at: new Date().toISOString() }; out.changes = 1; }
       }
 
       if (/update listings set view_count = view_count \+ 1 where id = \?/.test(sql)) {
@@ -288,6 +272,5 @@ function getPrepare() {
 
 // Singleton - initialize once and export the prepare function
 ensureStore();
-const prepare = getPrepare();
 
-module.exports = { prepare, init: () => ({ prepare }) };
+module.exports = prepare;

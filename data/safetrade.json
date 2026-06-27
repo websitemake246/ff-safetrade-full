@@ -1,0 +1,25 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@ff.local",
+      "phone": "2347014748748",
+      "password": "$2a$10$abcdefghijklmnopqrstuv",
+      "full_name": "Admin User",
+      "role": "admin",
+      "verification_status": "verified",
+      "is_verified": 1,
+      "bank_name": "",
+      "account_number": "",
+      "account_name": "",
+      "created_at": "2026-06-27T05:23:56.412Z",
+      "updated_at": "2026-06-27T05:23:56.413Z"
+    }
+  ],
+  "listings": [],
+  "deals": [],
+  "disputes": [],
+  "dispute_messages": [],
+  "activity_logs": []
+}
